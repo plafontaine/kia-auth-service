@@ -1,2 +1,3 @@
 flask
 gunicorn
+hyundai-kia-connect-api
