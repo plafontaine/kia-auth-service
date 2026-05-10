@@ -8,10 +8,22 @@ from hyundai_kia_connect_api.const import (
     BRAND_KIA,
     REGION_CANADA,
 )
-
+RENDER_API_KEY = os.environ.get("RENDER_API_KEY")
 TOKENS_FILE = "tokens.json"
 
 app = Flask(__name__)
+
+# -------------------------------
+# Utilitaires Secret API KEy
+# -------------------------------
+
+def check_api_key():
+    client_key = request.headers.get("X-API-Key")
+    if not RENDER_API_KEY or client_key != RENDER_API_KEY:
+        return False
+    return True
+
+
 
 # -------------------------------
 # Utilitaires tokens
