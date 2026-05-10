@@ -8,13 +8,16 @@ from hyundai_kia_connect_api.const import (
     BRAND_KIA,
     REGION_CANADA,
 )
+
+# 🔐 Clé API Render (variable d’environnement)
 RENDER_API_KEY = os.environ.get("RENDER_API_KEY")
+
 TOKENS_FILE = "tokens.json"
 
 app = Flask(__name__)
 
 # -------------------------------
-# Utilitaires Secret API KEy
+# Sécurité : clé API Render
 # -------------------------------
 
 def check_api_key():
@@ -22,8 +25,6 @@ def check_api_key():
     if not RENDER_API_KEY or client_key != RENDER_API_KEY:
         return False
     return True
-
-
 
 # -------------------------------
 # Utilitaires tokens
@@ -44,21 +45,18 @@ def tokens_valid(tokens):
         return False
     return tokens.get("expires_at", 0) > time.time() + 60
 
-
 # -------------------------------
 # Initialisation Kia
 # -------------------------------
 
 def get_vehicle_manager():
-    vm = VehicleManager(
+    return VehicleManager(
         region=REGION_CANADA,
         brand=BRAND_KIA,
         username=os.environ.get("KIA_USERNAME"),
         password=os.environ.get("KIA_PASSWORD"),
         pin=os.environ.get("KIA_PIN", ""),
     )
-    return vm
-
 
 # -------------------------------
 # Routes HTTP
@@ -68,6 +66,12 @@ def get_vehicle_manager():
 def home():
     return "Kia Auth Service is running"
 
+@app.route("/health")
+def health():
+    return jsonify({
+        "status": "ok",
+        "tokens_present": load_tokens() is not None
+    })
 
 @app.route("/status")
 def status():
@@ -77,18 +81,24 @@ def status():
         "tokens_valid": tokens_valid(tokens)
     })
 
-
-@app.route("/token")
+@app.route("/token", methods=["GET"])
 def get_token():
+
+    # 🔐 Sécurité Render
+    if not check_api_key():
+        return jsonify({"status": "unauthorized"}), 401
+
     tokens = load_tokens()
 
+    # ✅ Token valide
     if tokens_valid(tokens):
         return jsonify({
+            "status": "ok",
             "access_token": tokens["access_token"],
             "expires_at": tokens["expires_at"]
         })
 
-    # Sinon on tente un refresh
+    # 🔄 Tentative de refresh automatique
     vm = get_vehicle_manager()
     try:
         vm.check_and_refresh_token()
@@ -98,18 +108,31 @@ def get_token():
             "expires_at": time.time() + vm.token.expires_in,
         }
         save_tokens(new_tokens)
-        return jsonify(new_tokens)
-    except Exception as e:
-        return jsonify({"error": "MFA_REQUIRED", "detail": str(e)}), 401
 
+        return jsonify({
+            "status": "ok",
+            **new_tokens
+        })
+
+    # 🚨 MFA requis
+    except Exception as e:
+        return jsonify({
+            "status": "mfa_required",
+            "detail": str(e)
+        }), 401
 
 @app.route("/mfa", methods=["POST"])
 def mfa():
-    data = request.json
+
+    # 🔐 Sécurité Render
+    if not check_api_key():
+        return jsonify({"status": "unauthorized"}), 401
+
+    data = request.json or {}
     otp = data.get("otp")
 
     if not otp:
-        return jsonify({"error": "OTP_REQUIRED"}), 400
+        return jsonify({"status": "otp_required"}), 400
 
     vm = get_vehicle_manager()
 
@@ -124,6 +147,10 @@ def mfa():
         }
         save_tokens(new_tokens)
 
-        return jsonify({"status": "MFA_OK"})
+        return jsonify({"status": "ok"})
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "status": "error",
+            "detail": str(e)
+        }), 500
