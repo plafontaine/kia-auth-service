@@ -56,6 +56,9 @@ def get_vehicle_manager():
         username=os.environ.get("KIA_USERNAME"),
         password=os.environ.get("KIA_PASSWORD"),
         pin=os.environ.get("KIA_PIN", ""),
+        import os
+print("ENV REGION =", os.environ.get("REGION"))
+print("ENV KIA_REGION =", os.environ.get("KIA_REGION"))
     )
 
 # -------------------------------
