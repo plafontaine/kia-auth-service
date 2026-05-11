@@ -53,18 +53,13 @@ from hyundai_kia_connect_api.const import REGION_CANADA
 
 def get_vehicle_manager():
     vm = VehicleManager(
+        os.environ.get("KIA_USER"),     # ✅ username (POSITIONNEL)
+        os.environ.get("KIA_PASS"),     # ✅ password (POSITIONNEL)
         region=REGION_CANADA,
         brand="KIA",
         language="en",
         pin=os.environ.get("KIA_PIN", "")
     )
-
-    # ✅ AUTHENTIFICATION APRÈS INIT
-    vm.login(
-        username=os.environ.get("KIA_USER"),
-        password=os.environ.get("KIA_PASS")
-    )
-
     return vm
 # -------------------------------
 # Routes HTTP
