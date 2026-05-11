@@ -54,12 +54,12 @@ from hyundai_kia_connect_api import VehicleManager
 
 def get_vehicle_manager():
     vm = VehicleManager(
-        os.environ.get("KIA_USER"),     # username
-        os.environ.get("KIA_PASS"),     # password
-        4,                               # ✅ REGION CANADA (valeur brute)
-        "KIA",                           # brand
-        "en",                            # language
-        os.environ.get("KIA_PIN", "")   # pin
+        os.environ.get("KIA_USER"),     # 1️⃣ username
+        os.environ.get("KIA_PASS"),     # 2️⃣ password
+        4,                               # 3️⃣ region = CANADA (valeur brute)
+        "KIA",                           # 4️⃣ brand
+        "en",                            # 5️⃣ language
+        os.environ.get("KIA_PIN", "")   # 6️⃣ pin
     )
     return vm
 
