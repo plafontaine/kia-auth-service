@@ -48,8 +48,9 @@ def tokens_valid(tokens):
 # -------------------------------
 # Initialisation Kia
 # -------------------------------
-from hyundai_kia_connect_api.const import REGION_CANADA, BRAND_KIA
+import os
 from hyundai_kia_connect_api import KiaAccount, VehicleManager
+from hyundai_kia_connect_api.const import REGION_CANADA, BRAND_KIA
 
 def get_vehicle_manager():
     account = KiaAccount(
@@ -65,7 +66,6 @@ def get_vehicle_manager():
     )
 
     return vm
-
 # -------------------------------
 # Routes HTTP
 # -------------------------------
