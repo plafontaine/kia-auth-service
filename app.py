@@ -54,14 +54,34 @@ from hyundai_kia_connect_api import VehicleManager
 import os
 
 def get_vehicle_manager():
-    vm = VehicleManager(
-        os.environ.get("KIA_USER"),     # 1️⃣ username
-        os.environ.get("KIA_PASS"),     # 2️⃣ password
-        4,                               # 3️⃣ region = CANADA (valeur brute)
-        "KIA",                           # 4️⃣ brand
-        "en",                            # 5️⃣ language
-        os.environ.get("KIA_PIN", "")   # 6️⃣ pin
+    username = os.environ.get("KIA_USER")
+    password = os.environ.get("KIA_PASS")
+    region = 4          # ✅ CANADA
+    brand = "KIA"
+    language = "en"
+    pin = os.environ.get("KIA_PIN", "")
+
+    print(
+        "DEBUG VM ARGS:",
+        username,
+        password,
+        region,
+        brand,
+        language,
+        pin
     )
+
+    vm = VehicleManager(
+        username,
+        password,
+        region,
+        brand,
+        language,
+        pin
+    )
+
+    print("DEBUG vm.region =", vm.region)
+
     return vm
 
 # -------------------------------
