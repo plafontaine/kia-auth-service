@@ -48,27 +48,23 @@ def tokens_valid(tokens):
 # -------------------------------
 # Initialisation Kia
 # -------------------------------
-
-from hyundai_kia_connect_api.const import REGION_CANADA
-from hyundai_kia_connect_api import VehicleManager
+from hyundai_kia_connect_api.const import REGION_CANADA, BRAND_KIA
+from hyundai_kia_connect_api import KiaAccount, VehicleManager
 
 def get_vehicle_manager():
-    vm = VehicleManager(
-        brand="KIA",
-        language="en",
-        email=os.environ.get("KIA_USER"),
+    account = KiaAccount(
+        username=os.environ.get("KIA_USER"),
         password=os.environ.get("KIA_PASS"),
-        pin=os.environ.get("KIA_PIN", ""),
+        region=REGION_CANADA,
+        brand=BRAND_KIA,
     )
 
-    # 🔥 override APRÈS init (clé)
-    vm.region = REGION_CANADA
-    vm.api = vm.get_implementation_by_region_brand(
-        REGION_CANADA, vm.brand, vm.language
+    vm = VehicleManager(
+        account=account,
+        pin=os.environ.get("KIA_PIN", "")
     )
 
     return vm
-
 
 # -------------------------------
 # Routes HTTP
