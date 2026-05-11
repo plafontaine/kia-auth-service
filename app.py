@@ -51,7 +51,7 @@ def tokens_valid(tokens):
 
 def get_vehicle_manager():
     return VehicleManager(
-        region=REGION_CANADA,
+        REGION_CANADA = "CA",
         brand=BRAND_KIA,
         username=os.environ.get("KIA_USERNAME"),
         password=os.environ.get("KIA_PASSWORD"),
