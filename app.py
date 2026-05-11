@@ -51,6 +51,7 @@ def tokens_valid(tokens):
 # Initialisation Kia
 # -------------------------------
 from hyundai_kia_connect_api import VehicleManager
+import os
 
 def get_vehicle_manager():
     vm = VehicleManager(
