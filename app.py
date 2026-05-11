@@ -51,18 +51,18 @@ def tokens_valid(tokens):
 # Initialisation Kia
 # -------------------------------
 from hyundai_kia_connect_api import VehicleManager
-from hyundai_kia_connect_api.const import REGION_CANADA
 
 def get_vehicle_manager():
     vm = VehicleManager(
         os.environ.get("KIA_USER"),     # username
         os.environ.get("KIA_PASS"),     # password
-        REGION_CANADA,                  # region (POSITIONNEL)
-        "KIA",                           # brand (POSITIONNEL)
-        "en",                            # language (POSITIONNEL)
+        4,                               # ✅ REGION CANADA (valeur brute)
+        "KIA",                           # brand
+        "en",                            # language
         os.environ.get("KIA_PIN", "")   # pin
     )
     return vm
+
 # -------------------------------
 # Routes HTTP
 # -------------------------------
