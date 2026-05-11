@@ -8,8 +8,10 @@ from hyundai_kia_connect_api.const import (
     BRAND_KIA,
     REGION_CANADA,
 )
-
+from hyundai_kia_connect_api.const import REGION_CANADA
+print("DEBUG REGION_CANADA =", REGION_CANADA, type(REGION_CANADA))
 # 🔐 Clé API Render (variable d’environnement)
+
 RENDER_API_KEY = os.environ.get("RENDER_API_KEY")
 
 TOKENS_FILE = "tokens.json"
