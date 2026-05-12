@@ -91,8 +91,9 @@ def get_token():
 
     # 🔄 Nouvelle session Kia
     try:
+        print("DEBUG entering /token")
         vm = get_vehicle_manager()
-
+        print("DEBUG VehicleManager created")
         new_tokens = {
             "access_token": vm.token.access_token,
             "refresh_token": vm.token.refresh_token,
