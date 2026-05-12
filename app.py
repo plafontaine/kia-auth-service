@@ -27,10 +27,22 @@ def check_api_key():
 # ===============================
 
 def load_tokens():
+    access = os.environ.get("KIA_ACCESS_TOKEN")
+    refresh = os.environ.get("KIA_REFRESH_TOKEN")
+
+    if access or refresh:
+        return {
+            "access_token": access,
+            "refresh_token": refresh,
+            "expires_at": time.time() + 300  # court, juste pour amorcer
+        }
+
     if os.path.exists(TOKENS_FILE):
         with open(TOKENS_FILE, "r") as f:
             return json.load(f)
+
     return None
+
 
 def save_tokens(tokens):
     with open(TOKENS_FILE, "w") as f:
