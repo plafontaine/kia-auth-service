@@ -56,7 +56,7 @@ import os
 def get_vehicle_manager():
     vm = VehicleManager(
         4,                               # ✅ region = CANADA
-        "KIA",                           # ✅ brand
+        2,                               # ✅ brand = KIA (PAS "KIA")
         "en",                            # ✅ language
         os.environ.get("KIA_USER"),      # ✅ username
         os.environ.get("KIA_PASS"),      # ✅ password
