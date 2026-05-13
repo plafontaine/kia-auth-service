@@ -154,7 +154,7 @@ def vehicle_status():
             "Content-Type": "application/json;charset=UTF-8"
         }
 
-        # 🔥 1. FORCER REFRESH (super important)
+        # 🔥 1. Forcer refresh UNE SEULE FOIS
         if refresh:
             requests.post(
                 "https://kiaconnect.ca/tods/api/rsrfvhcl",
@@ -162,21 +162,27 @@ def vehicle_status():
                 json={"vehicleId": vehicle_id}
             )
 
-            # ⏱ laisser le temps au véhicule de répondre
-            time.sleep(20)
+        # ✅ 2. Loop pour récupérer les données
+        result = None
 
-        # ✅ 2. LIRE LE STATUS
-        response = requests.post(
-            "https://kiaconnect.ca/tods/api/stlwhcl",
-            headers=headers,
-            json={"vehicleId": vehicle_id}
-        )
+        for i in range(6):  # max ~30 secondes
+            time.sleep(5)
 
-        data = response.json()
+            response = requests.post(
+                "https://kiaconnect.ca/tods/api/stlwhcl",
+                headers=headers,
+                json={"vehicleId": vehicle_id}
+            )
+
+            data = response.json()
+
+            if data.get("result"):
+                result = data["result"]
+                break
 
         return jsonify({
             "status": "ok",
-            "result": data.get("result")
+            "result": result
         })
 
     except Exception as e:
@@ -184,6 +190,7 @@ def vehicle_status():
             "status": "error",
             "detail": str(e)
         }), 500
+
 
 
 
