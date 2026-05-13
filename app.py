@@ -126,6 +126,10 @@ def get_token():
 # refresh 
 # ============
 
+
+import requests
+import os
+
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
 
@@ -135,53 +139,31 @@ def vehicle_status():
     try:
         refresh = request.args.get("refresh", "false").lower() == "true"
 
+        # ✅ récupérer token correctement
         token_response = get_token()
         token = token_response.get_json()["access_token"]
-        
+
         vehicle_id = os.environ.get("KIA_VEHICLE_ID")
 
         headers = {
-        "accessToken": token,
-        "vehicleId": vehicle_id,
-        "REFRESH": str(refresh).lower(),
+            "accessToken": token,
+            "vehicleId": vehicle_id,
+            "REFRESH": str(refresh).lower(),
 
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/75.0.3770.142",
-        "Origin": "https://kiaconnect.ca",
-        "Referer": "https://kiaconnect.ca/cwp/overview",
-        "Accept": "application/json, text/plain, */*",
-        "Content-Type": "application/json;charset=UTF-8"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Origin": "https://kiaconnect.ca",
+            "Referer": "https://kiaconnect.ca/cwp/overview",
+            "Content-Type": "application/json;charset=UTF-8"
         }
-
 
         url = "https://kiaconnect.ca/tods/api/stlwhcl"
 
-        session = requests.Session()
-
-        # 1. login (ton code existant)
-        token = get_token_with_session(session)
-
-        # 2. status avec même session
-        response = session.post(url, headers={
-        "accessToken": token,
-        "vehicleId": vehicle_id,
-        "REFRESH": str(refresh).lower(),
-        "User-Agent": "...",
-        "Origin": "...",
-        "Referer": "...",
-        "Content-Type": "application/json"
-        }, json={})
-
+        response = requests.post(url, headers=headers, json={})
         data = response.json()
-
-        if not data.get("result"):
-            return jsonify({
-                "status": "error",
-                "detail": data
-            }), 500
 
         return jsonify({
             "status": "ok",
-            "result": data["result"]
+            "result": data.get("result")
         })
 
     except Exception as e:
@@ -189,6 +171,7 @@ def vehicle_status():
             "status": "error",
             "detail": str(e)
         }), 500
+
 
 
 
