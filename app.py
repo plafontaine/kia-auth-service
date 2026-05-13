@@ -182,7 +182,7 @@ def vehicle_status():
             headers=headers,
             json={"vehicleId": vehicle_id}
             )
-            print("REFRESH RESPONSE:", refresh_response.text)
+            print("STATUS RESPONSE:", data)
             if data.get("result"):
                 result = data["result"]
                 break
