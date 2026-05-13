@@ -135,7 +135,9 @@ def vehicle_status():
     try:
         refresh = request.args.get("refresh", "false").lower() == "true"
 
-        token = get_token()
+        token_response = get_token()
+        token = token_response.get_json()["access_token"]
+        
         vehicle_id = os.environ.get("KIA_VEHICLE_ID")
 
         headers = {
