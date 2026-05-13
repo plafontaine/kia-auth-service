@@ -137,7 +137,16 @@ def vehicle_status():
 
         vm = get_vehicle_manager()
 
-        # ⚡ appel Kia (version SAFE)
+        # 🔥 IMPORTANT
+        vm.get_vehicles()
+
+        if not vm.vehicles:
+            return jsonify({
+                "status": "error",
+                "detail": "No vehicles found"
+            }), 500
+
+        # ✅ mise à jour cache
         vm.update_all_vehicles_with_cached_state()
 
         if refresh:
