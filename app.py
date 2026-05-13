@@ -37,15 +37,20 @@ def get_vm():
             PASSWORD,
             PIN
         )
+
         vm.login()
+
+        # 🔥 IMPORTANT
         vm.get_account_vehicles()
 
+        # ✅ AJOUT CRITIQUE
+        for v in vm.vehicles:
+            v.update()   # initialise correctement les véhicules
+
     else:
-        # ✅ refresh token propre
         vm.check_and_refresh_token()
 
     return vm
-
 
 # ===============================
 # SECURITY
@@ -109,9 +114,13 @@ def vehicle_status():
         vm = get_vm()
         vehicle = vm.vehicles[0]
 
-        # ✅ BON CALL
+        # ✅ UNE SEULE LOGIQUE propre
         if refresh:
-            vehicle.force_refresh()
+            try:
+                vehicle.force_refresh()
+            except Exception as e:
+                print("Refresh failed (normal):", e)
+                vehicle.update()  # fallback
         else:
             vehicle.update()
 
@@ -123,7 +132,9 @@ def vehicle_status():
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 
 # ===============================
