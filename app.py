@@ -1,249 +1,169 @@
-import json
 import os
-import time
-import requests
 from flask import Flask, jsonify, request
-
 from hyundai_kia_connect_api import VehicleManager
-
-# ===============================
-# Configuration
-# ===============================
-
-RENDER_API_KEY = os.environ.get("RENDER_API_KEY")
-TOKENS_FILE = "tokens.json"
 
 app = Flask(__name__)
 
 # ===============================
-# Sécurité : API key Render
+# CONFIG
+# ===============================
+
+API_KEY = os.environ.get("RENDER_API_KEY")
+
+USERNAME = os.environ.get("KIA_USER")
+PASSWORD = os.environ.get("KIA_PASS")
+PIN = os.environ.get("KIA_PIN")
+
+# 🇨🇦 Canada Kia
+REGION = 4
+BRAND = 2
+
+# ===============================
+# SESSION (comme HA)
+# ===============================
+
+vm = None
+
+def get_vm():
+    global vm
+
+    if vm is None:
+        vm = VehicleManager(
+            REGION,
+            BRAND,
+            "en",
+            USERNAME,
+            PASSWORD,
+            PIN
+        )
+
+        vm.login()
+        vm.get_account_vehicles()
+
+    return vm
+
+# ===============================
+# SECURITY
 # ===============================
 
 def check_api_key():
-    client_key = request.headers.get("X-API-Key")
-    return bool(RENDER_API_KEY and client_key == RENDER_API_KEY)
+    return request.headers.get("X-API-Key") == API_KEY
 
 # ===============================
-# Utilitaires tokens
+# GET VEHICLES (remplace getVehicles)
 # ===============================
 
-def load_tokens():
-    access = os.environ.get("KIA_ACCESS_TOKEN")
-    refresh = os.environ.get("KIA_REFRESH_TOKEN")
-
-    if access or refresh:
-        return {
-            "access_token": access,
-            "refresh_token": refresh,
-            "expires_at": time.time() + 300  # court, juste pour amorcer
-        }
-
-    if os.path.exists(TOKENS_FILE):
-        with open(TOKENS_FILE, "r") as f:
-            return json.load(f)
-
-    return None
-
-
-def save_tokens(tokens):
-    with open(TOKENS_FILE, "w") as f:
-        json.dump(tokens, f)
-
-def tokens_valid(tokens):
-    return bool(tokens and tokens.get("expires_at", 0) > time.time() + 60)
-
-# ===============================
-# Initialisation VehicleManager
-# (VERSION LEGACY COMPATIBLE)
-# ===============================
-
-def get_vehicle_manager():
-    return VehicleManager(
-        4,                               # ✅ region = CANADA
-        2,                               # ✅ brand = KIA (ENUM, PAS "KIA")
-        "en",                            # ✅ language
-        os.environ.get("KIA_USER"),      # ✅ username
-        os.environ.get("KIA_PASS"),      # ✅ password
-        os.environ.get("KIA_PIN", "")    # ✅ pin
-    )
-
-# ===============================
-# Routes
-# ===============================
-
-@app.route("/")
-def home():
-    return "Kia Auth Service is running"
-
-@app.route("/health")
-def health():
-    return jsonify({
-        "status": "ok",
-        "tokens_present": load_tokens() is not None
-    })
-
-@app.route("/status")
-def status():
-    tokens = load_tokens()
-    return jsonify({
-        "tokens_present": tokens is not None,
-        "tokens_valid": tokens_valid(tokens)
-    })
-
-@app.route("/token", methods=["GET"])
-def get_token():
+@app.route("/vehicle/list", methods=["GET"])
+def vehicle_list():
 
     if not check_api_key():
-        return jsonify({"status": "unauthorized"}), 401
+        return jsonify({"error": "unauthorized"}), 401
 
-    tokens = load_tokens()
-
-    # ✅ Token encore valide
-    if tokens_valid(tokens):
-        return jsonify({"status": "ok", **tokens})
-
-    # 🔄 Nouvelle session Kia
     try:
-       # print("DEBUG entering /token")
-        vm = get_vehicle_manager()
-       # print("DEBUG VehicleManager created")
-        new_tokens = {
-            "access_token": vm.token.access_token,
-            "refresh_token": vm.token.refresh_token,
-            "expires_at": time.time() + vm.token.expires_in,
-        }
-        save_tokens(new_tokens)
+        vm = get_vm()
 
-        return jsonify({"status": "ok", **new_tokens})
+        vehicles = []
+
+        for v in vm.vehicles:
+            vehicles.append({
+                "vehicleId": v.id,
+                "vin": v.VIN,
+                "modelName": v.model_name,
+                "modelYear": v.model_year,
+                "trim": getattr(v, "trim", None),
+                "fuelKindCode": getattr(v, "fuel_type", None),
+                "exteriorColor": getattr(v, "exterior_color", None),
+                "nickName": getattr(v, "name", None)
+            })
+
+        return jsonify({
+            "status": "ok",
+            "result": {
+                "vehicles": vehicles
+            }
+        })
 
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "detail": str(e)
-        }), 500
+        return jsonify({"error": str(e)}), 500
 
-# ===============
-# refresh 
-# ============
+
+# ===============================
+# GET STATUS (remplace refresh/status)
+# ===============================
 
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
 
     if not check_api_key():
-        return jsonify({"status": "unauthorized"}), 401
+        return jsonify({"error": "unauthorized"}), 401
 
     try:
-        refresh = request.args.get("refresh", "false").lower() == "true"
+        refresh = request.args.get("refresh", "false") == "true"
 
-        # 🔐 token
-        token_response = get_token()
-        token = token_response.get_json()["access_token"]
+        vm = get_vm()
+        vehicle = vm.vehicles[0]
 
-        vehicle_id = os.environ.get("KIA_VEHICLE_ID")
-        print("TOKEN:", token)
-        print("VEHICLE_ID:", vehicle_id)
-
-        headers = {
-            "accessToken": token,
-            "vehicleId": vehicle_id,
-            "REFRESH": str(refresh).lower(),
-            "offset": "-5",
-
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "Origin": "https://kiaconnect.ca",
-            "Referer": "https://kiaconnect.ca/cwp/overview",
-            "Accept": "application/json, text/plain, */*",
-            "Content-Type": "application/json;charset=UTF-8"
-        }
-
-        # 🔥 1. Forcer refresh UNE SEULE FOIS
+        # ✅ cache vs refresh
         if refresh:
-            requests.post(
-                "https://kiaconnect.ca/tods/api/rsrfvhcl",
-                headers=headers,
-                json={"vehicleId": vehicle_id}
-            )
+            vm.force_refresh_vehicle(vehicle.id)
+        else:
+            vm.update_vehicle(vehicle.id)
 
-        # ✅ 2. Loop pour récupérer les données
-        result = None
-
-        for i in range(4):  # max ~30 secondes
-            time.sleep(5)
-
-            response = requests.post(
-                "https://kiaconnect.ca/tods/api/stlwhcl",
-                headers=headers,
-                json={"vehicleId": vehicle_id}
-            )
-
-            data = response.json()
-            if refresh:
-            requests.post(
-            "https://kiaconnect.ca/tods/api/rsrfvhcl",
-            headers=headers,
-            json={"vehicleId": vehicle_id}
-            )
-            print("STATUS RESPONSE:", data)
-            if data.get("result"):
-                result = data["result"]
-                break
+        data = vehicle.data
 
         return jsonify({
             "status": "ok",
-            "result": result
+            "result": {
+                "status": data
+            }
         })
 
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "detail": str(e)
-        }), 500
+        return jsonify({"error": str(e)}), 500
 
-# ===========
-# GET VEHICLE
-# ===========
 
-@app.route("/vehicle/list", methods=["GET"])
-def vehicle_list():
+# ===============================
+# COMMANDES (lock, unlock, start)
+# ===============================
+
+@app.route("/vehicle/<cmd>", methods=["POST"])
+def vehicle_action(cmd):
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
     try:
-        token_response = get_token()
-        token = token_response.get_json()["access_token"]
+        vm = get_vm()
+        vehicle = vm.vehicles[0]
 
-        headers = {
-            "accessToken": token,
-            "User-Agent": "Mozilla/5.0",
-            "Origin": "https://kiaconnect.ca",
-            "Referer": "https://kiaconnect.ca"
-        }
+        if cmd == "lock":
+            vm.lock(vehicle.id)
 
-        response = requests.post(
-            "https://kiaconnect.ca/tods/api/lstvhcl",
-            headers=headers,
-            json={}
-        )
+        elif cmd == "unlock":
+            vm.unlock(vehicle.id)
 
-        return jsonify(response.json())
+        elif cmd == "start":
+            vm.start_climate(vehicle.id)
+
+        elif cmd == "stop":
+            vm.stop_climate(vehicle.id)
+
+        else:
+            return jsonify({"error": "invalid command"}), 400
+
+        return jsonify({
+            "status": "ok",
+            "action": cmd
+        })
 
     except Exception as e:
-        return jsonify({"error": str(e)})
-
+        return jsonify({"error": str(e)}), 500
 
 
 # ===============================
-# MFA (non supporté proprement
-# dans cette version legacy)
+# HEALTH
 # ===============================
 
-@app.route("/mfa", methods=["POST"])
-def mfa():
-    return jsonify({
-        "status": "not_supported",
-        "detail": "MFA is automatically handled by Kia API in this version"
-    }), 400
-
-# ===============================
-# Lancement local (optionnel)
-# ===============================
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+@app.route("/")
+def home():
+    return "Kia API (HA-style) running ✅"
