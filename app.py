@@ -167,7 +167,7 @@ def vehicle_status():
         # ✅ 2. Loop pour récupérer les données
         result = None
 
-        for i in range(6):  # max ~30 secondes
+        for i in range(4):  # max ~30 secondes
             time.sleep(5)
 
             response = requests.post(
