@@ -140,6 +140,8 @@ def vehicle_status():
         token = token_response.get_json()["access_token"]
 
         vehicle_id = os.environ.get("KIA_VEHICLE_ID")
+        print("TOKEN:", token)
+        print("VEHICLE_ID:", vehicle_id)
 
         headers = {
             "accessToken": token,
@@ -175,7 +177,7 @@ def vehicle_status():
             )
 
             data = response.json()
-
+            print("REFRESH RESPONSE:", refresh_response.text)
             if data.get("result"):
                 result = data["result"]
                 break
