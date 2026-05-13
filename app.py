@@ -137,22 +137,22 @@ def vehicle_status():
 
         vm = get_vehicle_manager()
 
-        # 🔥 IMPORTANT : récupérer véhicules
-        vm.get_account_vehicles()
+        # ✅ IMPORTANT : force récupération des données
+        vm.login()
 
         if not vm.vehicles:
             return jsonify({
                 "status": "error",
-                "detail": "No vehicles found"
+                "detail": "No vehicles found after login"
             }), 500
 
         vehicle = vm.vehicles[0]
 
-        # ✅ refresh
+        # ✅ récupération des données du véhicule
+        vm.update_vehicle(vehicle.id)
+
         if refresh:
-            vm.get_vehicle(vehicle.id, force_refresh=True)
-        else:
-            vm.get_vehicle(vehicle.id)
+            vm.force_refresh_vehicle(vehicle.id)
 
         status = vehicle.data
 
@@ -177,6 +177,7 @@ def vehicle_status():
             "status": "error",
             "detail": str(e)
         }), 500
+
 
 
 # ===============================
