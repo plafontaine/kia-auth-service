@@ -1,4 +1,5 @@
 import os
+import time
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 
@@ -14,15 +15,15 @@ USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-# 🇨🇦 Canada Kia
+# ✅ TA BONNE CONFIG (NE PAS CHANGER)
 REGION = 4
 BRAND = 2
 
-# ===============================
-# SESSION (comme HA)
-# ===============================
-
 vm = None
+
+# ===============================
+# SESSION (persistante comme HA)
+# ===============================
 
 def get_vm():
     global vm
@@ -36,11 +37,15 @@ def get_vm():
             PASSWORD,
             PIN
         )
-
         vm.login()
         vm.get_account_vehicles()
 
+    else:
+        # ✅ refresh token propre
+        vm.check_and_refresh_token()
+
     return vm
+
 
 # ===============================
 # SECURITY
@@ -49,8 +54,9 @@ def get_vm():
 def check_api_key():
     return request.headers.get("X-API-Key") == API_KEY
 
+
 # ===============================
-# GET VEHICLES (remplace getVehicles)
+# GET VEHICLES (équivalent Hubitat)
 # ===============================
 
 @app.route("/vehicle/list", methods=["GET"])
@@ -68,8 +74,8 @@ def vehicle_list():
             vehicles.append({
                 "vehicleId": v.id,
                 "vin": v.VIN,
-                "modelName": v.model_name,
-                "modelYear": v.model_year,
+                "modelName": getattr(v, "model_name", None),
+                "modelYear": getattr(v, "model_year", None),
                 "trim": getattr(v, "trim", None),
                 "fuelKindCode": getattr(v, "fuel_type", None),
                 "exteriorColor": getattr(v, "exterior_color", None),
@@ -88,7 +94,7 @@ def vehicle_list():
 
 
 # ===============================
-# GET STATUS (remplace refresh/status)
+# STATUS
 # ===============================
 
 @app.route("/vehicle/status", methods=["GET"])
@@ -103,18 +109,15 @@ def vehicle_status():
         vm = get_vm()
         vehicle = vm.vehicles[0]
 
-        # ✅ cache vs refresh
         if refresh:
             vm.force_refresh_vehicle(vehicle.id)
         else:
             vm.update_vehicle(vehicle.id)
 
-        data = vehicle.data
-
         return jsonify({
             "status": "ok",
             "result": {
-                "status": data
+                "status": vehicle.data
             }
         })
 
@@ -123,7 +126,7 @@ def vehicle_status():
 
 
 # ===============================
-# COMMANDES (lock, unlock, start)
+# COMMANDES
 # ===============================
 
 @app.route("/vehicle/<cmd>", methods=["POST"])
@@ -166,4 +169,4 @@ def vehicle_action(cmd):
 
 @app.route("/")
 def home():
-    return "Kia API (HA-style) running ✅"
+    return "Kia API HA-style ✅"
