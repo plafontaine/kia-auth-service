@@ -137,8 +137,8 @@ def vehicle_status():
 
         vm = get_vehicle_manager()
 
-        # 🔥 IMPORTANT
-        vm.get_vehicles()
+        # 🔥 IMPORTANT : récupérer véhicules
+        vm.get_account_vehicles()
 
         if not vm.vehicles:
             return jsonify({
@@ -146,13 +146,14 @@ def vehicle_status():
                 "detail": "No vehicles found"
             }), 500
 
-        # ✅ mise à jour cache
-        vm.update_all_vehicles_with_cached_state()
-
-        if refresh:
-            vm.force_refresh_all_vehicles()
-
         vehicle = vm.vehicles[0]
+
+        # ✅ refresh
+        if refresh:
+            vm.get_vehicle(vehicle.id, force_refresh=True)
+        else:
+            vm.get_vehicle(vehicle.id)
+
         status = vehicle.data
 
         response = {
