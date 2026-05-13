@@ -109,32 +109,21 @@ def vehicle_status():
         return jsonify({"error": "unauthorized"}), 401
 
     try:
-        refresh = request.args.get("refresh", "false") == "true"
-
         vm = get_vm()
         vehicle = vm.vehicles[0]
 
-        # ✅ UNE SEULE LOGIQUE propre
-        if refresh:
-            try:
-                vehicle.force_refresh()
-            except Exception as e:
-                print("Refresh failed (normal):", e)
-                vehicle.update()  # fallback
-        else:
-            vehicle.update()
+        # ✅ PAS de update (important pour éviter error 7999 / invalid)
+        status = vehicle.data
 
         return jsonify({
             "status": "ok",
             "result": {
-                "status": vehicle.data
+                "status": status
             }
         })
 
     except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500
+        return jsonify({"error": str(e)}), 500
 
 
 # ===============================
