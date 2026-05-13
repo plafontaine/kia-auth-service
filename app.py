@@ -161,7 +161,26 @@ def vehicle_status():
 
         url = "https://kiaconnect.ca/tods/api/stlwhcl"
 
-        response = requests.post(url, headers=headers, json={})
+        response = requests.post(
+        "https://kiaconnect.ca/tods/api/stlwhcl",
+        headers={
+        "accessToken": token,
+        "vehicleId": vehicle_id,
+        "REFRESH": str(refresh).lower(),
+        "offset": "-5",
+
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/75.0.3770.142",
+        "Origin": "https://kiaconnect.ca",
+        "Referer": "https://kiaconnect.ca/cwp/overview",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json;charset=UTF-8"
+        },
+        json={
+        "vehicleId": vehicle_id
+        }
+        )
+
+
         data = response.json()
 
         return jsonify({
