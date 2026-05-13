@@ -133,48 +133,39 @@ def vehicle_status():
 
     try:
         refresh = request.args.get("refresh", "false").lower() == "true"
-        debug = request.args.get("debug", "false").lower() == "true"
 
-        vm = get_vehicle_manager()
-        vm.login()
+        token = get_token()
+        vehicle_id = os.environ.get("KIA_VEHICLE_ID")
 
-        if not vm.vehicles:
-            return jsonify({
-                "status": "error",
-                "detail": "No vehicles found"
-            }), 500
-
-        vehicle = vm.vehicles[0]
-
-        # ✅ BONNE FAÇON AVEC TA LIB
-        if refresh:
-            vehicle.force_refresh()
-        else:
-            vehicle.update()
-
-        status = vehicle.data
-
-        response = {
-            "status": "ok",
-            "result": {
-                "status": status,
-                "vehicle": {
-                    "subscriptionEndDate": getattr(vehicle, "subscription_end_date", None),
-                    "fuelKindCode": getattr(vehicle, "fuel_kind_code", None)
-                }
-            }
+        headers = {
+            "accessToken": token,
+            "vehicleId": vehicle_id,
+            "REFRESH": str(refresh).lower(),
+            "content-type": "application/json;charset=UTF-8"
         }
 
-        if debug:
-            response["raw"] = status
+        url = "https://kiaconnect.ca/tods/api/stlwhcl"
 
-        return jsonify(response)
+        response = requests.post(url, headers=headers, json={})
+        data = response.json()
+
+        if not data.get("result"):
+            return jsonify({
+                "status": "error",
+                "detail": data
+            }), 500
+
+        return jsonify({
+            "status": "ok",
+            "result": data["result"]
+        })
 
     except Exception as e:
         return jsonify({
             "status": "error",
             "detail": str(e)
         }), 500
+
 
 
 
