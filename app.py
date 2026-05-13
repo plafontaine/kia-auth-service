@@ -141,11 +141,17 @@ def vehicle_status():
         vehicle_id = os.environ.get("KIA_VEHICLE_ID")
 
         headers = {
-            "accessToken": token,
-            "vehicleId": vehicle_id,
-            "REFRESH": str(refresh).lower(),
-            "content-type": "application/json;charset=UTF-8"
+        "accessToken": token,
+        "vehicleId": vehicle_id,
+        "REFRESH": str(refresh).lower(),
+
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/75.0.3770.142",
+        "Origin": "https://kiaconnect.ca",
+        "Referer": "https://kiaconnect.ca/cwp/overview",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json;charset=UTF-8"
         }
+
 
         url = "https://kiaconnect.ca/tods/api/stlwhcl"
 
