@@ -202,9 +202,8 @@ def vehicle_status():
 # GET VEHICLE
 # ===========
 
- @app.route("/vehicle/list", methods=["GET"])
-    def vehicle_list():
-
+@app.route("/vehicle/list", methods=["GET"])
+def vehicle_list():
     try:
         token_response = get_token()
         token = token_response.get_json()["access_token"]
@@ -222,9 +221,7 @@ def vehicle_status():
             json={}
         )
 
-        data = response.json()
-
-        return jsonify(data)
+        return jsonify(response.json())
 
     except Exception as e:
         return jsonify({"error": str(e)})
