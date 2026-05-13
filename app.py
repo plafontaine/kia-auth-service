@@ -109,10 +109,11 @@ def vehicle_status():
         vm = get_vm()
         vehicle = vm.vehicles[0]
 
+        # ✅ BON CALL
         if refresh:
-            vm.force_refresh_vehicle(vehicle.id)
+            vehicle.force_refresh()
         else:
-            vm.update_vehicle(vehicle.id)
+            vehicle.update()
 
         return jsonify({
             "status": "ok",
