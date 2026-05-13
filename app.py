@@ -157,7 +157,20 @@ def vehicle_status():
 
         session = requests.Session()
 
-        response = session.post(url, headers=headers, json={})
+        # 1. login (ton code existant)
+        token = get_token_with_session(session)
+
+        # 2. status avec même session
+        response = session.post(url, headers={
+        "accessToken": token,
+        "vehicleId": vehicle_id,
+        "REFRESH": str(refresh).lower(),
+        "User-Agent": "...",
+        "Origin": "...",
+        "Referer": "...",
+        "Content-Type": "application/json"
+        }, json={})
+
         data = response.json()
 
         if not data.get("result"):
