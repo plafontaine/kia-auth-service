@@ -155,7 +155,9 @@ def vehicle_status():
 
         url = "https://kiaconnect.ca/tods/api/stlwhcl"
 
-        response = requests.post(url, headers=headers, json={})
+        session = requests.Session()
+
+        response = session.post(url, headers=headers, json={})
         data = response.json()
 
         if not data.get("result"):
