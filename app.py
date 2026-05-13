@@ -126,10 +126,6 @@ def get_token():
 # refresh 
 # ============
 
-
-import requests
-import os
-
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
 
@@ -139,47 +135,42 @@ def vehicle_status():
     try:
         refresh = request.args.get("refresh", "false").lower() == "true"
 
-        # ✅ récupérer token correctement
+        # 🔐 token
         token_response = get_token()
         token = token_response.get_json()["access_token"]
 
         vehicle_id = os.environ.get("KIA_VEHICLE_ID")
 
         headers = {
-        "accessToken": token,
-        "vehicleId": vehicle_id,
-        "REFRESH": str(refresh).lower(),
-        "offset": "-5",
+            "accessToken": token,
+            "vehicleId": vehicle_id,
+            "REFRESH": str(refresh).lower(),
+            "offset": "-5",
 
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/75.0.3770.142",
-        "Origin": "https://kiaconnect.ca",
-        "Referer": "https://kiaconnect.ca/cwp/overview",
-        "Accept": "application/json, text/plain, */*",
-        "Content-Type": "application/json;charset=UTF-8"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Origin": "https://kiaconnect.ca",
+            "Referer": "https://kiaconnect.ca/cwp/overview",
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json;charset=UTF-8"
         }
 
+        # 🔥 1. FORCER REFRESH (super important)
+        if refresh:
+            requests.post(
+                "https://kiaconnect.ca/tods/api/rsrfvhcl",
+                headers=headers,
+                json={"vehicleId": vehicle_id}
+            )
 
-        url = "https://kiaconnect.ca/tods/api/stlwhcl"
+            # ⏱ laisser le temps au véhicule de répondre
+            time.sleep(3)
 
+        # ✅ 2. LIRE LE STATUS
         response = requests.post(
-        "https://kiaconnect.ca/tods/api/stlwhcl",
-        headers={
-        "accessToken": token,
-        "vehicleId": vehicle_id,
-        "REFRESH": str(refresh).lower(),
-        "offset": "-5",
-
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/75.0.3770.142",
-        "Origin": "https://kiaconnect.ca",
-        "Referer": "https://kiaconnect.ca/cwp/overview",
-        "Accept": "application/json, text/plain, */*",
-        "Content-Type": "application/json;charset=UTF-8"
-        },
-        json={
-        "vehicleId": vehicle_id
-        }
+            "https://kiaconnect.ca/tods/api/stlwhcl",
+            headers=headers,
+            json={"vehicleId": vehicle_id}
         )
-
 
         data = response.json()
 
