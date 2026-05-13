@@ -137,24 +137,19 @@ def vehicle_status():
 
         vm = get_vehicle_manager()
 
-        # ✅ IMPORTANT : force récupération des données
+        # 🔐 login (important pour session valide)
         vm.login()
 
         if not vm.vehicles:
             return jsonify({
                 "status": "error",
-                "detail": "No vehicles found after login"
+                "detail": "No vehicles found"
             }), 500
 
         vehicle = vm.vehicles[0]
 
-        # ✅ récupération des données du véhicule
-        vm.update_vehicle(vehicle.id)
-
-        if refresh:
-            vm.force_refresh_vehicle(vehicle.id)
-
-        status = vehicle.data
+        # ✅ appel correct selon version
+        status = vm.get_vehicle_status(vehicle.id, refresh)
 
         response = {
             "status": "ok",
