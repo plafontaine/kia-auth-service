@@ -1,5 +1,4 @@
 import os
-import time
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 
@@ -10,19 +9,18 @@ app = Flask(__name__)
 # ===============================
 
 API_KEY = os.environ.get("RENDER_API_KEY")
-
 USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-# ✅ TA BONNE CONFIG (NE PAS CHANGER)
+# ✅ CORRECT pour ton environnement
 REGION = 4
 BRAND = 2
 
 vm = None
 
 # ===============================
-# SESSION (persistante comme HA)
+# SESSION
 # ===============================
 
 def get_vm():
@@ -37,20 +35,14 @@ def get_vm():
             PASSWORD,
             PIN
         )
-
         vm.login()
-
-        # 🔥 IMPORTANT
         vm.get_account_vehicles()
-
-        # ✅ AJOUT CRITIQUE
-        for v in vm.vehicles:
-            v.update()   # initialise correctement les véhicules
 
     else:
         vm.check_and_refresh_token()
 
     return vm
+
 
 # ===============================
 # SECURITY
@@ -61,7 +53,7 @@ def check_api_key():
 
 
 # ===============================
-# GET VEHICLES (équivalent Hubitat)
+# GET VEHICLES
 # ===============================
 
 @app.route("/vehicle/list", methods=["GET"])
@@ -71,19 +63,16 @@ def vehicle_list():
         return jsonify({"error": "unauthorized"}), 401
 
     try:
-        vm = get_vm()
+        current_vm = get_vm()
 
         vehicles = []
 
-        for v in vm.vehicles:
+        for v in current_vm.vehicles:
             vehicles.append({
                 "vehicleId": v.id,
                 "vin": v.VIN,
                 "modelName": getattr(v, "model_name", None),
                 "modelYear": getattr(v, "model_year", None),
-                "trim": getattr(v, "trim", None),
-                "fuelKindCode": getattr(v, "fuel_type", None),
-                "exteriorColor": getattr(v, "exterior_color", None),
                 "nickName": getattr(v, "name", None)
             })
 
@@ -99,7 +88,7 @@ def vehicle_list():
 
 
 # ===============================
-# STATUS
+# STATUS (FIX CRITIQUE ✅)
 # ===============================
 
 @app.route("/vehicle/status", methods=["GET"])
@@ -109,16 +98,21 @@ def vehicle_status():
         return jsonify({"error": "unauthorized"}), 401
 
     try:
-        vm = get_vm()
-        vehicle = vm.vehicles[0]
+        current_vm = get_vm()
 
-        # ✅ PAS de update (important pour éviter error 7999 / invalid)
-        status = vehicle.data
+        # ✅ EXTRACTION CORRECTE (clé du bug)
+        vehicle = current_vm.vehicles[0]  # ✅ car ta version est LIST
+
+        # ✅ appeler une seule fois
+        try:
+            vehicle.update()
+        except Exception as e:
+            print("Update failed:", e)
 
         return jsonify({
             "status": "ok",
             "result": {
-                "status": status
+                "status": vehicle.data
             }
         })
 
@@ -137,20 +131,14 @@ def vehicle_action(cmd):
         return jsonify({"error": "unauthorized"}), 401
 
     try:
-        vm = get_vm()
-        vehicle = vm.vehicles[0]
+        current_vm = get_vm()
+        vehicle = current_vm.vehicles[0]
 
         if cmd == "lock":
-            vm.lock(vehicle.id)
+            current_vm.lock(vehicle.id)
 
         elif cmd == "unlock":
-            vm.unlock(vehicle.id)
-
-        elif cmd == "start":
-            vm.start_climate(vehicle.id)
-
-        elif cmd == "stop":
-            vm.stop_climate(vehicle.id)
+            current_vm.unlock(vehicle.id)
 
         else:
             return jsonify({"error": "invalid command"}), 400
@@ -164,10 +152,6 @@ def vehicle_action(cmd):
         return jsonify({"error": str(e)}), 500
 
 
-# ===============================
-# HEALTH
-# ===============================
-
 @app.route("/")
 def home():
-    return "Kia API HA-style ✅"
+    return "Kia API running ✅"
