@@ -137,8 +137,8 @@ def vehicle_status():
 
         vm = get_vehicle_manager()
 
-        # ⚡ appel Kia
-        vm.update_vehicle_with_cached_state()
+        # ⚡ appel Kia (version SAFE)
+        vm.update_all_vehicles_with_cached_state()
 
         if refresh:
             vm.force_refresh_all_vehicles()
@@ -146,21 +146,27 @@ def vehicle_status():
         vehicle = vm.vehicles[0]
         status = vehicle.data
 
-        # ✅ réponse structurée
         response = {
             "status": "ok",
-
             "result": {
-                "status": {
-                    "engine": status.get("engine"),
-                    "doorLock": status.get("doorLock"),
-                    "trunkOpen": status.get("trunkOpen"),
-                    "doorOpen": status.get("doorOpen"),
-                    "fuelLevel": status.get("fuelLevel"),
-                    "lastStatusDate": status.get("lastStatusDate")
-                },
-
+                "status": status,
                 "vehicle": {
+                    "subscriptionEndDate": getattr(vehicle, "subscription_end_date", None),
+                    "fuelKindCode": getattr(vehicle, "fuel_kind_code", None)
+                }
+            }
+        }
+
+        if debug:
+            response["raw"] = status
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "detail": str(e)
+        }), 500
 
 
 # ===============================
