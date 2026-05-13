@@ -149,7 +149,7 @@ def vehicle_status():
         vehicle = vm.vehicles[0]
 
         # ✅ appel correct selon version
-        status = vm.get_vehicle_status(vehicle.id, refresh)
+       status = vm.get_vehicle_status(vehicle, refresh)
 
         response = {
             "status": "ok",
