@@ -163,7 +163,7 @@ def vehicle_status():
             )
 
             # ⏱ laisser le temps au véhicule de répondre
-            time.sleep(3)
+            time.sleep(20)
 
         # ✅ 2. LIRE LE STATUS
         response = requests.post(
