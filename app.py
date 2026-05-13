@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import requests
 from flask import Flask, jsonify, request
 
 from hyundai_kia_connect_api import VehicleManager
