@@ -177,6 +177,11 @@ def vehicle_status():
             )
 
             data = response.json()
+            refresh_response = requests.post(
+            "https://kiaconnect.ca/tods/api/rsrfvhcl",
+            headers=headers,
+            json={"vehicleId": vehicle_id}
+            )
             print("REFRESH RESPONSE:", refresh_response.text)
             if data.get("result"):
                 result = data["result"]
