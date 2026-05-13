@@ -136,8 +136,6 @@ def vehicle_status():
         debug = request.args.get("debug", "false").lower() == "true"
 
         vm = get_vehicle_manager()
-
-        # 🔐 login (important pour session valide)
         vm.login()
 
         if not vm.vehicles:
@@ -148,8 +146,13 @@ def vehicle_status():
 
         vehicle = vm.vehicles[0]
 
-        # ✅ appel correct selon version
-        status = vm.get_vehicle_status(vehicle,refresh)
+        # ✅ BONNE FAÇON AVEC TA LIB
+        if refresh:
+            vehicle.force_refresh()
+        else:
+            vehicle.update()
+
+        status = vehicle.data
 
         response = {
             "status": "ok",
