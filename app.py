@@ -198,8 +198,36 @@ def vehicle_status():
             "detail": str(e)
         }), 500
 
+# ===========
+# GET VEHICLE
+# ===========
 
+ @app.route("/vehicle/list", methods=["GET"])
+    def vehicle_list():
 
+    try:
+        token_response = get_token()
+        token = token_response.get_json()["access_token"]
+
+        headers = {
+            "accessToken": token,
+            "User-Agent": "Mozilla/5.0",
+            "Origin": "https://kiaconnect.ca",
+            "Referer": "https://kiaconnect.ca"
+        }
+
+        response = requests.post(
+            "https://kiaconnect.ca/tods/api/lstvhcl",
+            headers=headers,
+            json={}
+        )
+
+        data = response.json()
+
+        return jsonify(data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 
