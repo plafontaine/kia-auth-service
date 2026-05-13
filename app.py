@@ -121,6 +121,48 @@ def get_token():
             "detail": str(e)
         }), 500
 
+# ===============
+# refresh 
+# ============
+
+@app.route("/vehicle/status", methods=["GET"])
+def vehicle_status():
+
+    if not check_api_key():
+        return jsonify({"status": "unauthorized"}), 401
+
+    try:
+        refresh = request.args.get("refresh", "false").lower() == "true"
+        debug = request.args.get("debug", "false").lower() == "true"
+
+        vm = get_vehicle_manager()
+
+        # ⚡ appel Kia
+        vm.update_vehicle_with_cached_state()
+
+        if refresh:
+            vm.force_refresh_all_vehicles()
+
+        vehicle = vm.vehicles[0]
+        status = vehicle.data
+
+        # ✅ réponse structurée
+        response = {
+            "status": "ok",
+
+            "result": {
+                "status": {
+                    "engine": status.get("engine"),
+                    "doorLock": status.get("doorLock"),
+                    "trunkOpen": status.get("trunkOpen"),
+                    "doorOpen": status.get("doorOpen"),
+                    "fuelLevel": status.get("fuelLevel"),
+                    "lastStatusDate": status.get("lastStatusDate")
+                },
+
+                "vehicle": {
+
+
 # ===============================
 # MFA (non supporté proprement
 # dans cette version legacy)
