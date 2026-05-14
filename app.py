@@ -236,36 +236,25 @@ def prepare_login():
     if not check_api_key():
         return jsonify({"error": "unauthorized"}), 401
 
-    try:
-        vm = VehicleManager(
-            region=2,
-            brand=1,
-            username=USERNAME,
-            password=PASSWORD,
-            pin=PIN,
-            language="en"
-        )
+    # ✅ Endpoint réel Kia login
+    url = "https://api.connect.kia.com/v1/user/oauth2/token"
 
-        # 👇 on intercepte la session HTTP
-        session = vm.api.session
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "okhttp/3.12.0",
+        "Accept": "application/json"
+    }
 
-        def debug_request(request, *args, **kwargs):
-            print("URL:", request.url)
-            print("Headers:", request.headers)
-            print("Body:", request.body)
-            return request
+    payload = {
+        "username": USERNAME,
+        "password": PASSWORD
+    }
 
-        session.hooks['request'] = [debug_request]
-
-        try:
-            vm.login()
-        except Exception as e:
-            print("LOGIN intercepted")
-
-        return jsonify({"status": "check logs"})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "target_url": url,
+        "headers": headers,
+        "payload": payload
+    })
 
 
 
