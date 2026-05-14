@@ -11,10 +11,12 @@ USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-REGION = "CA"
-BRAND = "KIA"
+# ✅ IMPORTANT : garder numérique
+REGION = 2
+BRAND = 1
 
 vm = None
+
 
 def check_api_key():
     return request.headers.get("X-API-Key") == API_KEY
@@ -35,27 +37,49 @@ def get_vm():
 
         try:
             vm.login()
-            vm.get_account_vehicles()
+            vm.get_vehicles()
+            time.sleep(2)
 
-        except AuthenticationError:
+        except AuthenticationError as e:
+            print("MFA REQUIRED:", e)
             raise Exception("MFA_REQUIRED")
 
+        except Exception as e:
+            print("LOGIN ERROR:", e)
+            raise e
+
     else:
-        vm.check_and_refresh_token()
+        try:
+            vm.check_and_refresh_token()
+        except Exception as e:
+            print("Token refresh warning:", e)
 
     return vm
 
 
 @app.route("/vehicle/auth-otp", methods=["POST"])
 def auth_otp():
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
     global vm
 
-    code = request.json.get("code")
+    data = request.get_json()
+    otp_code = data.get("code") if data else None
+
+    if not otp_code:
+        return jsonify({"error": "Missing code"}), 400
 
     try:
-        vm.validate_mfa(code)
-        vm.get_account_vehicles()
-        return jsonify({"status": "ok"})
+        vm.validate_mfa(otp_code)
+        vm.get_vehicles()
+
+        return jsonify({
+            "status": "ok",
+            "message": "MFA validated ✅"
+        })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -67,15 +91,34 @@ def vehicle_status():
         return jsonify({"error": "unauthorized"}), 401
 
     try:
-        current_vm = get_vm()
+        try:
+            current_vm = get_vm()
+        except Exception as e:
+            if "MFA_REQUIRED" in str(e):
+                return jsonify({
+                    "status": "mfa_required"
+                }), 403
+            raise e
 
-        vehicle = list(current_vm.vehicles.values())[0]
+        # ✅ sécurise accès vehicle
+        vehicles = current_vm.vehicles
 
-        current_vm.update_vehicle(vehicle.id)
+        if isinstance(vehicles, dict):
+            vehicle_id = list(vehicles.keys())[0]
+            vehicle = vehicles[vehicle_id]
+        else:
+            vehicle = vehicles[0]
+
+        try:
+            vehicle.update()
+        except Exception as e:
+            print("Update failed:", e)
 
         return jsonify({
             "status": "ok",
-            "result": vehicle.data
+            "result": {
+                "status": vehicle.data
+            }
         })
 
     except Exception as e:
@@ -86,25 +129,32 @@ def vehicle_status():
         }), 500
 
 
-
 @app.route("/vehicle/<cmd>", methods=["POST"])
 def vehicle_action(cmd):
-    vm = get_vm()
-    vehicle = list(vm.vehicles.values())[0]
 
-    if cmd == "lock":
-        vm.lock(vehicle.id)
-    elif cmd == "unlock":
-        vm.unlock(vehicle.id)
-    else:
-        return jsonify({"error": "invalid command"}), 400
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
 
-    return jsonify({
-        "status": "ok",
-        "action": cmd
-    })
+    try:
+        vm = get_vm()
+        vehicle = vm.vehicles[0]
+
+        if cmd == "lock":
+            vm.lock(vehicle.id)
+        elif cmd == "unlock":
+            vm.unlock(vehicle.id)
+        else:
+            return jsonify({"error": "invalid command"}), 400
+
+        return jsonify({
+            "status": "ok",
+            "action": cmd
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/")
 def home():
-    return "Kia API V2 ✅"
+    return "Kia API (Canada stable) ✅"
