@@ -245,30 +245,27 @@ def prepare_login():
             language="en"
         )
 
-        # ⚠️ IMPORTANT : on initialise sans appeler Kia
-        api = vm.api
+        # 👇 on intercepte la session HTTP
+        session = vm.api.session
 
-        # ✅ Construire la requête login
-        url = api.API_LOGIN
+        def debug_request(request, *args, **kwargs):
+            print("URL:", request.url)
+            print("Headers:", request.headers)
+            print("Body:", request.body)
+            return request
 
-        headers = {
-            **api.API_HEADERS,
-            "Content-Type": "application/json"
-        }
+        session.hooks['request'] = [debug_request]
 
-        payload = {
-            "username": USERNAME,
-            "password": PASSWORD
-        }
+        try:
+            vm.login()
+        except Exception as e:
+            print("LOGIN intercepted")
 
-        return jsonify({
-            "target_url": url,
-            "headers": headers,
-            "payload": payload
-        })
+        return jsonify({"status": "check logs"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+``
 
 
 @app.route("/")
