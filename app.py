@@ -1,5 +1,6 @@
 import os
 import time
+import hyundai_kia_connect_api
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 
@@ -26,25 +27,26 @@ vm = None
 
 def get_vm():
     global vm
-
+    print(hyundai_kia_connect_api.__version__)
     if vm is None:
         vm = VehicleManager(
-            region=REGION,
-            brand=BRAND,
-            username=USERNAME,
-            password=PASSWORD,
-            pin=PIN,
-            language="en"
+            REGION,
+            BRAND,
+            "en",
+            USERNAME,
+            PASSWORD,
+            PIN
         )
 
         vm.login()
-        vm.get_account_vehicles()
 
-        # ✅ pause importante
+        # ✅ CORRECTION ICI
+        vm.get_vehicles()
+
         time.sleep(2)
 
-    # ✅ toujours refresh token au Canada
-    vm.check_and_refresh_token()
+    else:
+        vm.check_and_refresh_token()
 
     return vm
 
