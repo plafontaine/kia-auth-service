@@ -209,8 +209,8 @@ def prepare_status():
     })
 
 
-@app.route("/bridge/decode-status", methods=["POST"])
-def decode_status():
+@app.route("/bridge/decode-login", methods=["POST"])
+def decode_login():
 
     if not check_api_key():
         return jsonify({"error": "unauthorized"}), 401
@@ -220,7 +220,7 @@ def decode_status():
 
         return jsonify({
             "status": "ok",
-            "received": data
+            "raw_response": data
         })
 
     except Exception as e:
