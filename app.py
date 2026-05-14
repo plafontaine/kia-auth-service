@@ -27,7 +27,6 @@ vm = None
 
 def get_vm():
     global vm
-    print(hyundai_kia_connect_api.__version__)
     print("Module:", dir(hyundai_kia_connect_api))
     if vm is None:
         vm = VehicleManager(
