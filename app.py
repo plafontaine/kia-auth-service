@@ -5,47 +5,46 @@ from hyundai_kia_connect_api import VehicleManager
 
 app = Flask(__name__)
 
+# ===============================
+# CONFIG
+# ===============================
+
 API_KEY = os.environ.get("RENDER_API_KEY")
 USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-REGION = 4
-BRAND = 2
+# ✅ CONFIG CORRIGÉE
+REGION = 2
+BRAND = 1
 
 vm = None
 
+# ===============================
+# SESSION
+# ===============================
 
 def get_vm():
     global vm
 
     if vm is None:
         vm = VehicleManager(
-            REGION,
-            BRAND,
-            "en",
-            USERNAME,
-            PASSWORD,
-            PIN
+            region=REGION,
+            brand=BRAND,
+            username=USERNAME,
+            password=PASSWORD,
+            pin=PIN,
+            language="en"
         )
 
         vm.login()
-
-        # ✅ IMPORTANT 1 : charger les véhicules
         vm.get_account_vehicles()
 
-        # ✅ IMPORTANT 2 : hydrater (TRÈS IMPORTANT)
-        for v in vm.vehicles:
-            try:
-                v.update()
-            except Exception as e:
-                print("Initial hydrate fail:", e)
-
-        # ✅ IMPORTANT 3 : attente (HA fait ça implicitement)
+        # ✅ pause importante
         time.sleep(2)
 
-    else:
-        vm.check_and_refresh_token()
+    # ✅ toujours refresh token au Canada
+    vm.check_and_refresh_token()
 
     return vm
 
@@ -55,38 +54,9 @@ def check_api_key():
 
 
 # ===============================
-# VEHICLES
-# ===============================
-@app.route("/vehicle/list", methods=["GET"])
-def vehicle_list():
-
-    if not check_api_key():
-        return jsonify({"error": "unauthorized"}), 401
-
-    try:
-        vm = get_vm()
-
-        vehicles = []
-
-        for v in vm.vehicles:
-            vehicles.append({
-                "vehicleId": v.id,
-                "vin": v.VIN,
-                "modelName": getattr(v, "model_name", None)
-            })
-
-        return jsonify({
-            "status": "ok",
-            "result": {"vehicles": vehicles}
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# ===============================
 # STATUS
 # ===============================
+
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
 
@@ -95,24 +65,21 @@ def vehicle_status():
 
     try:
         vm = get_vm()
-        vehicle = vm.vehicles[0]
 
-        # ✅ HA STYLE LOOP (CRUCIAL)
-        success = False
+        # ✅ dict access (CRUCIAL)
+        vehicle_keys = list(vm.vehicles.keys())
+        if not vehicle_keys:
+            return jsonify({"error": "No vehicle found"}), 404
 
-        for i in range(3):
-            try:
-                vehicle.update()
-                success = True
-                break
-            except Exception as e:
-                print(f"Retry {i+1} failed:", e)
-                time.sleep(2)
+        vehicle_id = vehicle_keys[0]
 
-        if not success:
-            return jsonify({
-                "error": "update failed after retries"
-            }), 500
+        # ✅ SAFE CALL
+        try:
+            vm.update_vehicle(vehicle_id)
+        except Exception as e:
+            print("Update failed:", e)
+
+        vehicle = vm.vehicles[vehicle_id]
 
         return jsonify({
             "status": "ok",
@@ -128,6 +95,7 @@ def vehicle_status():
 # ===============================
 # ACTIONS
 # ===============================
+
 @app.route("/vehicle/<cmd>", methods=["POST"])
 def vehicle_action(cmd):
 
@@ -136,13 +104,15 @@ def vehicle_action(cmd):
 
     try:
         vm = get_vm()
-        vehicle = vm.vehicles[0]
+
+        vehicle_keys = list(vm.vehicles.keys())
+        vehicle_id = vehicle_keys[0]
 
         if cmd == "lock":
-            vm.lock(vehicle.id)
+            vm.lock(vehicle_id)
 
         elif cmd == "unlock":
-            vm.unlock(vehicle.id)
+            vm.unlock(vehicle_id)
 
         else:
             return jsonify({"error": "invalid command"}), 400
@@ -158,4 +128,4 @@ def vehicle_action(cmd):
 
 @app.route("/")
 def home():
-    return "Kia API HA-compatible ✅"
+    return "Kia API CA-compatible ✅"
