@@ -225,7 +225,46 @@ def decode_status():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-        
+# ========
+# bridge prepare login
+# =============
+
+@app.route("/bridge/prepare-login", methods=["GET"])
+def prepare_login():
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
+    try:
+        vm = VehicleManager(
+            region=2,
+            brand=1,
+            username=USERNAME,
+            password=PASSWORD,
+            pin=PIN,
+            language="en"
+        )
+
+        # ⚠️ on ne fait PAS login()
+        # MAIS on accède à l'API interne
+
+        url = vm.api.API_LOGIN
+        headers = vm.api.API_HEADERS_LOGIN
+
+        payload = {
+            "username": USERNAME,
+            "password": PASSWORD
+        }
+
+        return jsonify({
+            "target_url": url,
+            "headers": headers,
+            "payload": payload
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/")
 def home():
     return "Kia API ✅"
