@@ -11,11 +11,11 @@ USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
+# ✅ RESTER NUMERIQUE (important pour ta lib actuelle)
 REGION = 2
 BRAND = 1
 
 vm = None
-
 
 def check_api_key():
     return request.headers.get("X-API-Key") == API_KEY
@@ -43,11 +43,15 @@ def get_vm():
             print("MFA REQUIRED:", e)
             raise Exception("MFA_REQUIRED")
 
+        except Exception as e:
+            print("LOGIN ERROR:", e)
+            raise e
+
     else:
         try:
             vm.check_and_refresh_token()
-        except:
-            pass
+        except Exception as e:
+            print("Token refresh error:", e)
 
     return vm
 
@@ -59,7 +63,6 @@ def auth_otp():
         return jsonify({"error": "unauthorized"}), 401
 
     global vm
-
     data = request.get_json()
     otp_code = data.get("code") if data else None
 
@@ -96,6 +99,7 @@ def vehicle_status():
                 }), 403
             raise e
 
+        # ✅ TA VERSION → list
         vehicle = current_vm.vehicles[0]
 
         try:
@@ -111,7 +115,9 @@ def vehicle_status():
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": f"Internal error: {str(e)}"
+        }), 500
 
 
 @app.route("/vehicle/<cmd>", methods=["POST"])
