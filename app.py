@@ -6,31 +6,20 @@ from hyundai_kia_connect_api.exceptions import AuthenticationError
 
 app = Flask(__name__)
 
-# ===============================
-# CONFIG
-# ===============================
-
 API_KEY = os.environ.get("RENDER_API_KEY")
 USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-# ✅ CONFIG Canada (compatible ta lib actuelle)
 REGION = 2
 BRAND = 1
 
 vm = None
 
-# ===============================
-# SECURITY
-# ===============================
 
 def check_api_key():
     return request.headers.get("X-API-Key") == API_KEY
 
-# ===============================
-# SESSION + LOGIN (avec MFA)
-# ===============================
 
 def get_vm():
     global vm
@@ -47,19 +36,12 @@ def get_vm():
 
         try:
             vm.login()
-
-            # ✅ méthode compatible ancienne lib
             vm.get_vehicles()
-
             time.sleep(2)
 
         except AuthenticationError as e:
             print("MFA REQUIRED:", e)
             raise Exception("MFA_REQUIRED")
-
-        except Exception as e:
-            print("LOGIN ERROR:", e)
-            raise e
 
     else:
         try:
@@ -69,9 +51,6 @@ def get_vm():
 
     return vm
 
-# ===============================
-# MFA: VALIDER CODE SMS / EMAIL
-# ===============================
 
 @app.route("/vehicle/auth-otp", methods=["POST"])
 def auth_otp():
@@ -81,16 +60,6 @@ def auth_otp():
 
     global vm
 
-    if vm is None:
-        vm = VehicleManager(
-            REGION,
-            BRAND,
-            "en",
-            USERNAME,
-            PASSWORD,
-            PIN
-        )
-
     data = request.get_json()
     otp_code = data.get("code") if data else None
 
@@ -99,7 +68,6 @@ def auth_otp():
 
     try:
         vm.validate_mfa(otp_code)
-
         vm.get_vehicles()
 
         return jsonify({
@@ -110,9 +78,6 @@ def auth_otp():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ===============================
-# STATUS
-# ===============================
 
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
@@ -148,9 +113,6 @@ def vehicle_status():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ===============================
-# COMMANDES (lock/unlock)
-# ===============================
 
 @app.route("/vehicle/<cmd>", methods=["POST"])
 def vehicle_action(cmd):
@@ -179,11 +141,7 @@ def vehicle_action(cmd):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ===============================
-# ROOT
-# ===============================
 
 @app.route("/")
 def home():
     return "Kia API (MFA ready) ✅"
-``
