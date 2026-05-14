@@ -11,12 +11,10 @@ USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-# ✅ NOUVELLE API
 REGION = "CA"
 BRAND = "KIA"
 
 vm = None
-
 
 def check_api_key():
     return request.headers.get("X-API-Key") == API_KEY
@@ -37,7 +35,7 @@ def get_vm():
 
         try:
             vm.login()
-            vm.get_account_vehicles()  # ✅ IMPORTANT (new API)
+            vm.get_account_vehicles()
 
         except AuthenticationError:
             raise Exception("MFA_REQUIRED")
@@ -50,19 +48,20 @@ def get_vm():
 
 @app.route("/vehicle/auth-otp", methods=["POST"])
 def auth_otp():
-
     global vm
+
     code = request.json.get("code")
 
-    vm.validate_mfa(code)
-    vm.get_account_vehicles()
-
-    return jsonify({"status": "ok"})
+    try:
+        vm.validate_mfa(code)
+        vm.get_account_vehicles()
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
-
     try:
         vm = get_vm()
 
@@ -81,7 +80,24 @@ def vehicle_status():
     })
 
 
+@app.route("/vehicle/<cmd>", methods=["POST"])
+def vehicle_action(cmd):
+    vm = get_vm()
+    vehicle = list(vm.vehicles.values())[0]
+
+    if cmd == "lock":
+        vm.lock(vehicle.id)
+    elif cmd == "unlock":
+        vm.unlock(vehicle.id)
+    else:
+        return jsonify({"error": "invalid command"}), 400
+
+    return jsonify({
+        "status": "ok",
+        "action": cmd
+    })
+
+
 @app.route("/")
 def home():
     return "Kia API V2 ✅"
-``
