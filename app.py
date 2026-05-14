@@ -245,11 +245,16 @@ def prepare_login():
             language="en"
         )
 
-        # ⚠️ on ne fait PAS login()
-        # MAIS on accède à l'API interne
+        # ⚠️ IMPORTANT : on initialise sans appeler Kia
+        api = vm.api
 
-        url = vm.api.API_LOGIN
-        headers = vm.api.API_HEADERS_LOGIN
+        # ✅ Construire la requête login
+        url = api.API_LOGIN
+
+        headers = {
+            **api.API_HEADERS,
+            "Content-Type": "application/json"
+        }
 
         payload = {
             "username": USERNAME,
@@ -264,6 +269,7 @@ def prepare_login():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/")
 def home():
