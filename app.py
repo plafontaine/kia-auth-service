@@ -187,7 +187,55 @@ def test_login():
 
     except Exception as e:
         return str(e)
+# ======
+# bridge prepare route
+# ==========
 
+@app.route("/bridge/prepare-status", methods=["GET"])
+def prepare_status():
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
+    try:
+        vm = VehicleManager(
+            region=2,
+            brand=1,
+            username=USERNAME,
+            password=PASSWORD,
+            pin=PIN,
+            language="en"
+        )
+
+        # ⚠️ on ne fait PAS vm.login() ici (bloqué par Kia)
+        # on prépare seulement une structure test
+
+        return jsonify({
+            "status": "ok",
+            "message": "Bridge ready ✅"
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/bridge/decode-status", methods=["POST"])
+def decode_status():
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
+    try:
+        data = request.get_json()
+
+        return jsonify({
+            "status": "ok",
+            "received": data
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 @app.route("/")
 def home():
     return "Kia API ✅"
