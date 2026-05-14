@@ -166,7 +166,27 @@ def vehicle_action(cmd):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+# =========
+# test route
+# =======
+@app.route("/test-login")
+def test_login():
 
+    vm = VehicleManager(
+        region=2,
+        brand=1,
+        username=USERNAME,
+        password=PASSWORD,
+        pin=PIN,
+        language="en"
+    )
+
+    try:
+        vm.login()
+        return "LOGIN OK"
+
+    except Exception as e:
+        return str(e)
 
 @app.route("/")
 def home():
