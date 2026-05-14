@@ -11,11 +11,12 @@ USERNAME = os.environ.get("KIA_USER")
 PASSWORD = os.environ.get("KIA_PASS")
 PIN = os.environ.get("KIA_PIN")
 
-# ✅ RESTER NUMERIQUE (important pour ta lib actuelle)
-REGION = 2
-BRAND = 1
+# ✅ NOUVELLE API
+REGION = "CA"
+BRAND = "KIA"
 
 vm = None
+
 
 def check_api_key():
     return request.headers.get("X-API-Key") == API_KEY
@@ -26,32 +27,23 @@ def get_vm():
 
     if vm is None:
         vm = VehicleManager(
-            REGION,
-            BRAND,
-            "en",
-            USERNAME,
-            PASSWORD,
-            PIN
+            region=REGION,
+            brand=BRAND,
+            username=USERNAME,
+            password=PASSWORD,
+            pin=PIN,
+            language="en"
         )
 
         try:
             vm.login()
-            vm.get_vehicles()
-            time.sleep(2)
+            vm.get_account_vehicles()  # ✅ IMPORTANT (new API)
 
-        except AuthenticationError as e:
-            print("MFA REQUIRED:", e)
+        except AuthenticationError:
             raise Exception("MFA_REQUIRED")
 
-        except Exception as e:
-            print("LOGIN ERROR:", e)
-            raise e
-
     else:
-        try:
-            vm.check_and_refresh_token()
-        except Exception as e:
-            print("Token refresh error:", e)
+        vm.check_and_refresh_token()
 
     return vm
 
@@ -59,95 +51,37 @@ def get_vm():
 @app.route("/vehicle/auth-otp", methods=["POST"])
 def auth_otp():
 
-    if not check_api_key():
-        return jsonify({"error": "unauthorized"}), 401
-
     global vm
-    data = request.get_json()
-    otp_code = data.get("code") if data else None
+    code = request.json.get("code")
 
-    if not otp_code:
-        return jsonify({"error": "Missing code"}), 400
+    vm.validate_mfa(code)
+    vm.get_account_vehicles()
 
-    try:
-        vm.validate_mfa(otp_code)
-        vm.get_vehicles()
-
-        return jsonify({
-            "status": "ok",
-            "message": "MFA validated ✅"
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"status": "ok"})
 
 
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
 
-    if not check_api_key():
-        return jsonify({"error": "unauthorized"}), 401
-
-    try:
-        try:
-            current_vm = get_vm()
-        except Exception as e:
-            if "MFA_REQUIRED" in str(e):
-                return jsonify({
-                    "status": "mfa_required",
-                    "message": "Check SMS/email and send code to /vehicle/auth-otp"
-                }), 403
-            raise e
-
-        # ✅ TA VERSION → list
-        vehicle = current_vm.vehicles[0]
-
-        try:
-            vehicle.update()
-        except Exception as e:
-            print("Update failed:", e)
-
-        return jsonify({
-            "status": "ok",
-            "result": {
-                "status": vehicle.data
-            }
-        })
-
-    except Exception as e:
-        return jsonify({
-            "error": f"Internal error: {str(e)}"
-        }), 500
-
-
-@app.route("/vehicle/<cmd>", methods=["POST"])
-def vehicle_action(cmd):
-
-    if not check_api_key():
-        return jsonify({"error": "unauthorized"}), 401
-
     try:
         vm = get_vm()
-        vehicle = vm.vehicles[0]
-
-        if cmd == "lock":
-            vm.lock(vehicle.id)
-
-        elif cmd == "unlock":
-            vm.unlock(vehicle.id)
-
-        else:
-            return jsonify({"error": "invalid command"}), 400
-
-        return jsonify({
-            "status": "ok",
-            "action": cmd
-        })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        if "MFA_REQUIRED" in str(e):
+            return jsonify({"status": "mfa_required"}), 403
+        raise
+
+    vehicle = list(vm.vehicles.values())[0]
+
+    vm.update_vehicle(vehicle.id)
+
+    return jsonify({
+        "status": "ok",
+        "result": vehicle.data
+    })
 
 
 @app.route("/")
 def home():
-    return "Kia API (MFA ready) ✅"
+    return "Kia API V2 ✅"
+``
