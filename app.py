@@ -120,7 +120,23 @@ def vehicle_status():
             "trace": traceback.format_exc()
         }), 500
 
+@app.route("/bridge/status", methods=["POST"])
+def bridge_status():
 
+    data = request.json
+
+    # data = réponse brute Kia envoyée par Hubitat
+
+    try:
+        # Ici tu pourrais parser manuellement
+        return jsonify({
+            "status": "ok",
+            "raw": data
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 @app.route("/vehicle/<cmd>", methods=["POST"])
 def vehicle_action(cmd):
 
