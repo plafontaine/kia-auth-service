@@ -62,22 +62,29 @@ def auth_otp():
 
 @app.route("/vehicle/status", methods=["GET"])
 def vehicle_status():
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
     try:
-        vm = get_vm()
+        current_vm = get_vm()
+
+        vehicle = list(current_vm.vehicles.values())[0]
+
+        current_vm.update_vehicle(vehicle.id)
+
+        return jsonify({
+            "status": "ok",
+            "result": vehicle.data
+        })
 
     except Exception as e:
-        if "MFA_REQUIRED" in str(e):
-            return jsonify({"status": "mfa_required"}), 403
-        raise
+        import traceback
+        return jsonify({
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }), 500
 
-    vehicle = list(vm.vehicles.values())[0]
-
-    vm.update_vehicle(vehicle.id)
-
-    return jsonify({
-        "status": "ok",
-        "result": vehicle.data
-    })
 
 
 @app.route("/vehicle/<cmd>", methods=["POST"])
