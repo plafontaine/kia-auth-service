@@ -266,21 +266,21 @@ def vehicle_action(cmd):
 @app.route("/test-login")
 def test_login():
 
-    vm = VehicleManager(
-        region=2,
-        brand=1,
-        username=USERNAME,
-        password=PASSWORD,
-        pin=PIN,
-        language="en"
-    )
+    url = "https://auth.kiaconnect.ca/oauth2/token"
 
-    try:
-        vm.login()
-        return "LOGIN OK"
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
 
-    except Exception as e:
-        return str(e)
+    body = {
+        "username": "TON_EMAIL",
+        "password": "TON_PASSWORD",
+        "grant_type": "password"
+    }
+
+    result = envoyer_via_hubitat_bridge(url, headers, body)
+
+    return result
 # ======
 # bridge prepare route
 # ==========
