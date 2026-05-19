@@ -230,17 +230,21 @@ def decode_login():
 # bridge prepare login
 # =============
 
-@app.route("/bridge/prepare-ping", methods=["GET"])
-def prepare_ping():
+@app.route("/bridge/prepare-kia-test", methods=["GET"])
+def prepare_kia_test():
 
     if not check_api_key():
         return jsonify({"error": "unauthorized"}), 401
 
     return jsonify({
-        "target_url": "https://www.google.com",
-        "headers": {},
-        "payload": {}
+        "target_url": "https://www.kia.com",
+        "headers": {
+            "User-Agent": "Mozilla/5.0"
+        },
+        "payload": None,
+        "method": "GET"
     })
+
 
 
 
