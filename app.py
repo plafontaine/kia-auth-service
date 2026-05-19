@@ -1,3 +1,4 @@
+import requests
 import os
 import time
 import traceback
@@ -6,7 +7,7 @@ logging.basicConfig(level=logging.DEBUG)
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 from hyundai_kia_connect_api.exceptions import AuthenticationError
-import requests
+
 
 original_request = requests.Session.request
 
