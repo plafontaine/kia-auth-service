@@ -241,7 +241,6 @@ def prepare_ping():
         "headers": {},
         "payload": {}
     })
-``
 
 
 
