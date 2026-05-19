@@ -285,14 +285,26 @@ def capture_vehicles():
     if not check_api_key():
         return jsonify({"error": "unauthorized"}), 401
 
-    vm = get_vm()
+    try:
+        vm = get_vm()
 
-    # 🔥 trigger l'appel Kia
-    vm.get_vehicles()
+        # reset avant capture
+        captured_request = {}
 
-    return jsonify({
-        "captured": captured_request
-    })
+        # 🔥 trigger appel Kia
+        vm.get_vehicles()
+
+        return jsonify({
+            "status": "ok",
+            "captured": captured_request
+        })
+
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "error": str(e),
+            "trace": traceback.format_exc()
+        }), 500
 
 
 @app.route("/")
