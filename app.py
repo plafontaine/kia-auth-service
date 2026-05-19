@@ -230,31 +230,18 @@ def decode_login():
 # bridge prepare login
 # =============
 
-@app.route("/bridge/prepare-login", methods=["GET"])
-def prepare_login():
+@app.route("/bridge/prepare-ping", methods=["GET"])
+def prepare_ping():
 
     if not check_api_key():
         return jsonify({"error": "unauthorized"}), 401
 
-    # ✅ Endpoint réel Kia login
-    url = "https://api.connect.kia.com/v1/user/oauth2/token"
-
-    headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "okhttp/3.12.0",
-        "Accept": "application/json"
-    }
-
-    payload = {
-        "username": USERNAME,
-        "password": PASSWORD
-    }
-
     return jsonify({
-        "target_url": url,
-        "headers": headers,
-        "payload": payload
+        "target_url": "https://www.google.com",
+        "headers": {},
+        "payload": {}
     })
+``
 
 
 
