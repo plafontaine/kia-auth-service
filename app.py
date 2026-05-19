@@ -356,7 +356,24 @@ def capture_status():
             "error": str(e),
             "trace": traceback.format_exc()
         }), 500
+# =========
+# test proxy
+# =========
 
+def test_hubitat_proxy():
+    url_kia = "https://httpbin.org/post"
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    body = {
+        "test": "hubitat proxy works"
+    }
+
+    result = envoyer_via_hubitat_bridge(url_kia, headers, body)
+
+    print("RESULT:", result)
 
 @app.route("/")
 def home():
