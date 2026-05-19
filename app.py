@@ -237,14 +237,11 @@ def prepare_kia_test():
         return jsonify({"error": "unauthorized"}), 401
 
     return jsonify({
-        "target_url": "https://www.kia.com",
-        "headers": {
-            "User-Agent": "Mozilla/5.0"
-        },
+        "target_url": "https://postman-echo.com/get",
+        "headers": {},
         "payload": None,
         "method": "GET"
     })
-
 
 
 
