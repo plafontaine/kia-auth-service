@@ -273,6 +273,26 @@ def prepare_kia_test():
         "method": "GET"
     })
 
+# =========
+# capture demande
+# ============
+
+@app.route("/bridge/capture-vehicles", methods=["GET"])
+def capture_vehicles():
+
+    global captured_request
+
+    if not check_api_key():
+        return jsonify({"error": "unauthorized"}), 401
+
+    vm = get_vm()
+
+    # 🔥 trigger l'appel Kia
+    vm.get_vehicles()
+
+    return jsonify({
+        "captured": captured_request
+    })
 
 
 @app.route("/")
