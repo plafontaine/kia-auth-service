@@ -412,6 +412,22 @@ def test_proxy():
     return result
 
 
+@app.route("/test-kia")
+def test_kia():
+
+    token = "TON_VRAI_TOKEN"
+
+    result = envoyer_via_hubitat_bridge(
+        "https://api.connect.kia.com/v1/spa/vehicles",
+        {
+            "Authorization": f"Bearer {token}"
+        },
+        {}
+    )
+
+    return result
+
+
 @app.route("/")
 def home():
     return "Kia API ✅"
