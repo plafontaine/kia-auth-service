@@ -16,24 +16,29 @@ captured_request = {}
 def hooked_request(self, method, url, **kwargs):
     global captured_request
 
-    headers = kwargs.get("headers", {})
+    try:
+        headers = kwargs.get("headers", {})
 
-    # ✅ convertir en dict simple
-    clean_headers = {}
-    for k, v in headers.items():
-        clean_headers[str(k)] = str(v)
+        # ✅ rendre sérialisable
+        clean_headers = {}
+        if headers:
+            for k, v in headers.items():
+                clean_headers[str(k)] = str(v)
 
-    captured_request = {
-        "method": str(method),
-        "url": str(url),
-        "headers": clean_headers,
-        "data": str(kwargs.get("data")) if kwargs.get("data") else None,
-        "json": kwargs.get("json"),
-        "params": kwargs.get("params")
-    }
+        captured_request = {
+            "method": str(method),
+            "url": str(url),
+            "headers": clean_headers,
+            "data": str(kwargs.get("data")) if kwargs.get("data") else None,
+            "json": kwargs.get("json"),
+            "params": kwargs.get("params")
+        }
 
-    print("🔥 INTERCEPTED REQUEST 🔥")
-    print(captured_request)
+        print("🔥 INTERCEPTED REQUEST 🔥")
+        print(captured_request)
+
+    except Exception as hook_error:
+        print("HOOK ERROR:", hook_error)
 
     return original_request(self, method, url, **kwargs)
 
