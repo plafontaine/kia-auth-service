@@ -237,7 +237,7 @@ def prepare_kia_test():
         return jsonify({"error": "unauthorized"}), 401
 
     return jsonify({
-        "target_url": "https://postman-echo.com/get",
+        "target_url": "https://httpbin.org/get",
         "headers": {},
         "payload": None,
         "method": "GET"
