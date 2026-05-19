@@ -319,8 +319,8 @@ def prepare_kia_test():
 # capture demande
 # ============
 
-@app.route("/bridge/capture-vehicles", methods=["GET"])
-def capture_vehicles():
+@app.route("/bridge/capture-status", methods=["GET"])
+def capture_status():
 
     global captured_request
 
@@ -330,12 +330,21 @@ def capture_vehicles():
     try:
         vm = get_vm()
 
-        # ✅ FORCE UN VRAI APPEL
-        vm.vehicles = None
+        vehicles = vm.vehicles
 
+        if not vehicles:
+            return jsonify({"error": "No vehicle"}), 404
+
+        if isinstance(vehicles, dict):
+            vehicle = list(vehicles.values())[0]
+        else:
+            vehicle = vehicles[0]
+
+        # ✅ reset capture
         captured_request = {}
 
-        vm.vehicles
+        # ✅ 🔥 FORCE APPEL RÉEL KIA
+        vm.update_vehicle(vehicle.id)
 
         return jsonify({
             "status": "ok",
