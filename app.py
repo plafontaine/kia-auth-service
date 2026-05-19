@@ -6,6 +6,34 @@ logging.basicConfig(level=logging.DEBUG)
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 from hyundai_kia_connect_api.exceptions import AuthenticationError
+import requests
+
+original_request = requests.Session.request
+
+captured_request = {}
+
+def hooked_request(self, method, url, **kwargs):
+    global captured_request
+
+    captured_request = {
+        "method": method,
+        "url": url,
+        "headers": kwargs.get("headers"),
+        "data": kwargs.get("data"),
+        "json": kwargs.get("json"),
+        "params": kwargs.get("params")
+    }
+
+    print("🔥 INTERCEPTED REQUEST 🔥")
+    print(captured_request)
+
+    return original_request(self, method, url, **kwargs)
+
+requests.Session.request = hooked_request
+
+# =========
+# add latest (end)
+# ==========
 
 app = Flask(__name__)
 
