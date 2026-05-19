@@ -65,6 +65,7 @@ def check_api_key():
 
 def get_vm():
     global vm
+    global captured_request  # ✅ AJOUT
 
     if vm is None:
         vm = VehicleManager(
@@ -79,7 +80,7 @@ def get_vm():
         try:
             vm.login()
             vm.vehicles = None
-            captured_request = {}
+            captured_request = {}  # ✅ maintenant global
             vm.get_vehicles()
             time.sleep(2)
 
