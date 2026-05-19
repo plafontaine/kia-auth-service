@@ -81,7 +81,7 @@ def get_vm():
             vm.login()
             vm.vehicles = None
             captured_request = {}  # ✅ maintenant global
-            vm.get_vehicles()
+            vm.vehicles  # accès simple pour forcer init
             time.sleep(2)
 
         except AuthenticationError:
@@ -310,7 +310,7 @@ def capture_vehicles():
 
         captured_request = {}
 
-        vm.get_vehicles()
+        vm.vehicles
 
         return jsonify({
             "status": "ok",
