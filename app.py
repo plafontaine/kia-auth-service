@@ -305,19 +305,19 @@ def capture_vehicles():
     try:
         vm = get_vm()
 
-        # reset avant capture
+        # ✅ FORCE UN VRAI APPEL
+        vm.vehicles = None
+
         captured_request = {}
 
-        # 🔥 trigger appel Kia
         vm.get_vehicles()
 
         return jsonify({
             "status": "ok",
-            "captured": captured_request
+            "captured": captured_request if captured_request else "EMPTY"
         })
 
     except Exception as e:
-        import traceback
         return jsonify({
             "error": str(e),
             "trace": traceback.format_exc()
