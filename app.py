@@ -7,6 +7,28 @@ logging.basicConfig(level=logging.DEBUG)
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 from hyundai_kia_connect_api.exceptions import AuthenticationError
+import json
+
+HUBITAT_URL = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824a/apps/246/devices/272/sendKiaRequest"
+ACCESS_TOKEN = "57ad1d4c-edcc-4c24-aaaa-bbbbcccc"
+
+
+def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
+
+    params = {
+        "access_token": ACCESS_TOKEN,
+        "targetUrl": kia_url,
+        "headersJson": json.dumps(kia_headers),
+        "bodyData": json.dumps(kia_body)
+    }
+
+    response = requests.get(HUBITAT_URL, params=params)
+
+    print("STATUS:", response.status_code)
+    print("TEXT:", response.text)
+
+    return response.text
+
 
 
 original_request = requests.request
@@ -374,6 +396,21 @@ def test_hubitat_proxy():
     result = envoyer_via_hubitat_bridge(url_kia, headers, body)
 
     print("RESULT:", result)
+# =======
+# test proxy device
+# =========
+
+@app.route("/test-proxy")
+def test_proxy():
+
+    result = envoyer_via_hubitat_bridge(
+        "https://httpbin.org/post",
+        {"Content-Type": "application/json"},
+        {"hello": "hubitat"}
+    )
+
+    return result
+
 
 @app.route("/")
 def home():
