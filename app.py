@@ -1,6 +1,8 @@
 import os
 import time
 import traceback
+import http.client as http_client
+http_client.HTTPConnection.debuglevel = 1
 from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 from hyundai_kia_connect_api.exceptions import AuthenticationError
