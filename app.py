@@ -9,17 +9,16 @@ from hyundai_kia_connect_api import VehicleManager
 from hyundai_kia_connect_api.exceptions import AuthenticationError
 
 
-original_request = requests.Session.request
+original_request = requests.request
 
 captured_request = {}
 
-def hooked_request(self, method, url, **kwargs):
+def hooked_request(method, url, **kwargs):
     global captured_request
 
     try:
         headers = kwargs.get("headers", {})
 
-        # ✅ rendre sérialisable
         clean_headers = {}
         if headers:
             for k, v in headers.items():
@@ -34,16 +33,16 @@ def hooked_request(self, method, url, **kwargs):
             "params": kwargs.get("params")
         }
 
-        print("🔥 INTERCEPTED REQUEST 🔥")
+        print("🔥 INTERCEPTED GLOBAL REQUEST 🔥")
         print(captured_request)
 
-    except Exception as hook_error:
-        print("HOOK ERROR:", hook_error)
+    except Exception as e:
+        print("HOOK ERROR:", e)
 
-    return original_request(self, method, url, **kwargs)
+    return original_request(method, url, **kwargs)
 
-
-requests.Session.request = hooked_request
+requests.request = hooked_request
+``
 
 # =========
 # add latest (end)
