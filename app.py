@@ -78,6 +78,8 @@ def get_vm():
 
         try:
             vm.login()
+            vm.vehicles = None
+            captured_request = {}
             vm.get_vehicles()
             time.sleep(2)
 
