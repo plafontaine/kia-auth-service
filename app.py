@@ -16,11 +16,18 @@ captured_request = {}
 def hooked_request(self, method, url, **kwargs):
     global captured_request
 
+    headers = kwargs.get("headers", {})
+
+    # ✅ convertir en dict simple
+    clean_headers = {}
+    for k, v in headers.items():
+        clean_headers[str(k)] = str(v)
+
     captured_request = {
-        "method": method,
-        "url": url,
-        "headers": kwargs.get("headers"),
-        "data": kwargs.get("data"),
+        "method": str(method),
+        "url": str(url),
+        "headers": clean_headers,
+        "data": str(kwargs.get("data")) if kwargs.get("data") else None,
         "json": kwargs.get("json"),
         "params": kwargs.get("params")
     }
@@ -29,6 +36,7 @@ def hooked_request(self, method, url, **kwargs):
     print(captured_request)
 
     return original_request(self, method, url, **kwargs)
+
 
 requests.Session.request = hooked_request
 
