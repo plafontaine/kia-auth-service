@@ -42,7 +42,33 @@ def hooked_request(method, url, **kwargs):
     return original_request(method, url, **kwargs)
 
 requests.request = hooked_request
-``
+
+# =======
+# hoock #2
+# =========
+
+original_send = requests.Session.send
+
+def hooked_send(self, request, **kwargs):
+    global captured_request
+
+    try:
+        captured_request = {
+            "method": request.method,
+            "url": request.url,
+            "headers": {k: str(v) for k, v in request.headers.items()},
+            "body": request.body.decode() if isinstance(request.body, bytes) else str(request.body)
+        }
+
+        print("🔥 INTERCEPTED RAW REQUEST 🔥")
+        print(captured_request)
+
+    except Exception as e:
+        print("HOOK ERROR:", e)
+
+    return original_send(self, request, **kwargs)
+
+requests.Session.send = hooked_send
 
 # =========
 # add latest (end)
