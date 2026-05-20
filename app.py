@@ -14,29 +14,25 @@ ACCESS_TOKEN = "57ad1d4c-edcc-4c24-aaaa-bbbbcccc"
 
 import urllib.parse
 
+import datetime
+
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    # 🔥 1 SEUL PAYLOAD JSON
+    now = datetime.datetime.now()
+    print("PYTHON SENT AT:", now)
+
     payload = {
         "url": kia_url,
         "headers": kia_headers,
         "body": kia_body
     }
 
-    # ✅ encoder tout le JSON en une seule string
     encoded = urllib.parse.quote(json.dumps(payload))
 
-    # ✅ 1 seul argument
-    url = f"{HUBITAT_URL}/{encoded}?access_token={ACCESS_TOKEN}"
+    requests.get(f"{BASE}/setPayload/{encoded}?access_token={TOKEN}")
+    requests.get(f"{BASE}/sendKiaRequest?access_token={TOKEN}")
 
-    print("URL envoyée:", url)
-
-    response = requests.get(url)
-
-    print("STATUS:", response.status_code)
-    print("TEXT:", response.text)
-
-    return response.text
+    return "REQUEST SENT"
 
 
 
