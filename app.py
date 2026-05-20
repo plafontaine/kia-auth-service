@@ -17,25 +17,24 @@ import urllib.parse
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
+    url = f"{HUBITAT_URL}?access_token={ACCESS_TOKEN}"
+
     payload = {
-        "url": kia_url,
-        "headers": kia_headers,
-        "body": kia_body
+        "command": "sendKiaRequest",
+        "jsonPayload": {
+            "url": kia_url,
+            "headers": kia_headers,
+            "body": kia_body
+        }
     }
 
-    encoded = urllib.parse.quote(json.dumps(payload))
-
-    command_url = (
-        f"{HUBITAT_URL}/command/sendKiaRequest/{encoded}"
-        f"?access_token={ACCESS_TOKEN}"
-    )
-
-    response = requests.get(command_url)
+    response = requests.post(url, json=payload)
 
     print("STATUS:", response.status_code)
     print("TEXT:", response.text)
 
     return response.text
+
 
 
 
