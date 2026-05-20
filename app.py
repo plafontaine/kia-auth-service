@@ -454,6 +454,30 @@ def test_kia_real():
 
     return result
 
+# =======
+# login mobile
+# ==========
+
+
+@app.route("/test-login-mobile")
+def test_login_mobile():
+
+    url = "https://api.connect.kia.com/v1/user/oauth2/token"
+
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "okhttp/3.12.0"
+    }
+
+    body = {
+        "username": "TON_EMAIL",
+        "password": "TON_PASSWORD"
+    }
+
+    result = envoyer_via_hubitat_bridge(url, headers, body)
+
+    return result
+
 
 
 @app.route("/")
