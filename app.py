@@ -15,19 +15,22 @@ ACCESS_TOKEN = "57ad1d4c-edcc-4c24-aaaa-bbbbcccc"
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
+    command_url = HUBITAT_URL
+
     params = {
         "access_token": ACCESS_TOKEN,
-        "targetUrl": kia_url,
-        "headersJson": json.dumps(kia_headers),
-        "bodyData": json.dumps(kia_body)
+        "arg1": kia_url,
+        "arg2": json.dumps(kia_headers),
+        "arg3": json.dumps(kia_body)
     }
 
-    response = requests.get(HUBITAT_URL, params=params)
+    response = requests.get(command_url, params=params)
 
     print("STATUS:", response.status_code)
     print("TEXT:", response.text)
 
     return response.text
+
 
 
 
