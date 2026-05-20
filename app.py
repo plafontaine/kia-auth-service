@@ -18,17 +18,29 @@ import urllib.parse
 
 import datetime
 
+# ✅ IMPORTANT : BASE sans commande
+BASE = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824a/apps/246/devices/272"
+TOKEN = "57ad1d4c-edcc-4c24-aaaa-bbbbcccc"
+
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    arg1 = urllib.parse.quote(kia_url, safe='')
-    arg2 = urllib.parse.quote(json.dumps(kia_headers), safe='')
-    arg3 = urllib.parse.quote(json.dumps(kia_body), safe='')
+    # 🔥 1 seul payload JSON
+    payload = {
+        "url": kia_url,
+        "headers": kia_headers,
+        "body": kia_body
+    }
 
+    # ✅ encoder complètement
+    encoded = urllib.parse.quote(json.dumps(payload), safe='')
 
-    url = f"{BASE}/sendKiaRequest/{arg1}/{arg2}/{arg3}?access_token={TOKEN}"
+    # ✅ URL finale
+    url = f"{BASE}/sendKiaRequest/{encoded}?access_token={TOKEN}"
 
-    print("CALL:", url)
+    print("CALL HUBITAT:")
+    print(url)
 
+    # ✅ appeler Hubitat
     response = requests.get(url)
 
     print("STATUS HUBITAT:", response.status_code)
