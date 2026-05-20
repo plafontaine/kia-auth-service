@@ -13,23 +13,25 @@ HUBITAT_URL = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824
 ACCESS_TOKEN = "57ad1d4c-edcc-4c24-aaaa-bbbbcccc"
 
 
+import urllib.parse
+
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    command_url = HUBITAT_URL + f"?access_token={ACCESS_TOKEN}"
+    arg1 = urllib.parse.quote(kia_url)
+    arg2 = urllib.parse.quote(json.dumps(kia_headers))
+    arg3 = urllib.parse.quote(json.dumps(kia_body))
 
-    payload = {
-        "arg1": kia_url,
-        "arg2": json.dumps(kia_headers),
-        "arg3": json.dumps(kia_body)
-    }
+    command_url = (
+        f"{HUBITAT_URL}/command/sendKiaRequest/"
+        f"{arg1}/{arg2}/{arg3}?access_token={ACCESS_TOKEN}"
+    )
 
-    response = requests.post(command_url, data=payload)
+    response = requests.get(command_url)
 
     print("STATUS:", response.status_code)
     print("TEXT:", response.text)
 
     return response.text
-
 
 
 
