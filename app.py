@@ -17,13 +17,17 @@ import urllib.parse
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    arg1 = urllib.parse.quote(kia_url)
-    arg2 = urllib.parse.quote(json.dumps(kia_headers))
-    arg3 = urllib.parse.quote(json.dumps(kia_body))
+    payload = {
+        "url": kia_url,
+        "headers": kia_headers,
+        "body": kia_body
+    }
+
+    encoded = urllib.parse.quote(json.dumps(payload))
 
     command_url = (
-        f"{HUBITAT_URL}/command/sendKiaRequest/"
-        f"{arg1}/{arg2}/{arg3}?access_token={ACCESS_TOKEN}"
+        f"{HUBITAT_URL}/command/sendKiaRequest/{encoded}"
+        f"?access_token={ACCESS_TOKEN}"
     )
 
     response = requests.get(command_url)
