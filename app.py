@@ -468,9 +468,10 @@ def test_login_mobile():
     url = "https://api.connect.kia.com/v1/user/oauth2/token"
 
     headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "okhttp/3.12.0"
-    }
+    "Content-Type": "application/json",
+    "User-Agent": "okhttp/3.12.0",
+    "Accept": "application/json"
+}
 
     body = {
     "grant_type": "password",
