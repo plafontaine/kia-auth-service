@@ -16,11 +16,20 @@ import urllib.parse
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    arg1 = urllib.parse.quote(kia_url)
-    arg2 = urllib.parse.quote(json.dumps(kia_headers))
-    arg3 = urllib.parse.quote(json.dumps(kia_body))
+    # 🔥 1 SEUL PAYLOAD JSON
+    payload = {
+        "url": kia_url,
+        "headers": kia_headers,
+        "body": kia_body
+    }
 
-    url = f"{HUBITAT_URL}/{arg1}/{arg2}/{arg3}?access_token={ACCESS_TOKEN}"
+    # ✅ encoder tout le JSON en une seule string
+    encoded = urllib.parse.quote(json.dumps(payload))
+
+    # ✅ 1 seul argument
+    url = f"{HUBITAT_URL}/{encoded}?access_token={ACCESS_TOKEN}"
+
+    print("URL envoyée:", url)
 
     response = requests.get(url)
 
@@ -28,7 +37,6 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
     print("TEXT:", response.text)
 
     return response.text
-
 
 
 
