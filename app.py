@@ -482,16 +482,18 @@ def test_kia_real():
 
 @app.route("/test-login-mobile")
 def test_login_mobile():
-    try:
-        result = envoyer_via_hubitat_bridge(
-            "https://httpbin.org/post",
-            {"Content-Type": "application/json"},
-            {"test": "patrick"}
-        )
-        return result
 
-    except Exception as e:
-        return f"ERREUR: {str(e)}"
+    return envoyer_via_hubitat_bridge(
+        "https://auth.kiaconnect.ca/oauth2/token",
+        {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        {
+            "username": USERNAME,
+            "password": PASSWORD,
+            "grant_type": "password"
+        }
+    )
 
 
 @app.route("/")
