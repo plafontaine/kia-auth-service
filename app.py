@@ -467,16 +467,16 @@ def test_kia_real():
 
 @app.route("/test-login-mobile")
 def test_login_mobile():
+    try:
+        result = envoyer_via_hubitat_bridge(
+            "https://httpbin.org/post",
+            {"Content-Type": "application/json"},
+            {"test": "patrick"}
+        )
+        return result
 
-    # ✅ TEST SIMPLE avec httpbin (pas Kia pour l'instant)
-    result = envoyer_via_hubitat_bridge(
-        "https://httpbin.org/post",
-        {"Content-Type": "application/json"},
-        {"test": "patrick"}
-    )
-
-    return result
-
+    except Exception as e:
+        return f"ERREUR: {str(e)}"
 
 
 @app.route("/")
