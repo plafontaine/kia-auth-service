@@ -28,7 +28,10 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
     print("CALL:", url)
 
-    requests.get(url)
+    response = requests.get(url)
+
+    print("STATUS HUBITAT:", response.status_code)
+    print("RESPONSE HUBITAT:", response.text)
 
     return "REQUEST SENT"
 
