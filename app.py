@@ -441,7 +441,7 @@ def test_kia_real():
 
         # ✅ CRITIQUE (manquants)
         "Origin": "https://kiaconnect.ca",
-        "Referer": "https://kiaconnect.ca/cwp/overview",
+        "Referer": "https://kiaconnect.ca/login",
         "User-Agent": "Mozilla/5.0",
         "Accept": "application/json, text/plain, */*"
     }
