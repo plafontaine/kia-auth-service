@@ -20,7 +20,7 @@ import datetime
 
 # ✅ IMPORTANT : BASE sans commande
 BASE = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824a/apps/246/devices/272"
-TOKEN = "57ad1d4c-edcc-4c24-aaaa-bbbbcccc"
+TOKEN = "57ad1d4c-edcc-4b8e-aaee-2371e9cc9d4e"
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
