@@ -20,21 +20,18 @@ import datetime
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    now = datetime.datetime.now()
-    print("PYTHON SENT AT:", now)
+    arg1 = urllib.parse.quote(kia_url)
+    arg2 = urllib.parse.quote(json.dumps(kia_headers))
+    arg3 = urllib.parse.quote(json.dumps(kia_body))
 
-    payload = {
-        "url": kia_url,
-        "headers": kia_headers,
-        "body": kia_body
-    }
+    url = f"{BASE}/{arg1}/{arg2}/{arg3}?access_token={TOKEN}"
 
-    encoded = urllib.parse.quote(json.dumps(payload))
+    print("CALL:", url)
 
-    requests.get(f"{BASE}/setPayload/{encoded}?access_token={TOKEN}")
-    requests.get(f"{BASE}/sendKiaRequest?access_token={TOKEN}")
+    requests.get(url)
 
     return "REQUEST SENT"
+
 
 
 
