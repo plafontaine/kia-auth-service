@@ -437,7 +437,13 @@ def test_kia_real():
         "Accesstoken": token,
         "Content-Type": "application/json",
         "Language": "1",
-        "Offset": "-4"
+        "Offset": "-4",
+
+        # ✅ CRITIQUE (manquants)
+        "Origin": "https://kiaconnect.ca",
+        "Referer": "https://kiaconnect.ca/cwp/overview",
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json, text/plain, */*"
     }
 
     result = envoyer_via_hubitat_bridge(
@@ -447,6 +453,7 @@ def test_kia_real():
     )
 
     return result
+
 
 
 @app.route("/")
