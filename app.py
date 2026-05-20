@@ -20,7 +20,7 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
     arg2 = urllib.parse.quote(json.dumps(kia_headers))
     arg3 = urllib.parse.quote(json.dumps(kia_body))
 
-    url = f"{HUBITAT_URL}/sendKiaRequest/{arg1}/{arg2}/{arg3}?access_token={ACCESS_TOKEN}"
+    url = f"{HUBITAT_URL}/{arg1}/{arg2}/{arg3}?access_token={ACCESS_TOKEN}"
 
     response = requests.get(url)
 
