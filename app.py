@@ -26,10 +26,11 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
     # 🔥 1 seul payload JSON
     payload = {
-        "url": kia_url,
-        "headers": kia_headers,
-        "body": kia_body
+    "url": kia_url,
+    "headers": kia_headers,
+    "body": urllib.parse.urlencode(kia_body) if kia_headers.get("Content-Type") == "application/x-www-form-urlencoded" else kia_body
     }
+
 
     # ✅ encoder complètement
     encoded = urllib.parse.quote(json.dumps(payload), safe='')
