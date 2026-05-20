@@ -485,9 +485,11 @@ def test_kia_real():
 def test_login_mobile():
 
     return envoyer_via_hubitat_bridge(
-        "https://auth.kiaconnect.com/oauth2/token",
+        "https://api.connect.kia.com/oauth2/token",
         {
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+            "User-Agent": "okhttp/4.9.0"
         },
         {
             "username": USERNAME,
