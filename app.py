@@ -470,8 +470,8 @@ def test_login_mobile():
     }
 
     body = {
-        "username": "TON_EMAIL",
-        "password": "TON_PASSWORD"
+        "username": "PLAFONTAINE44@GMAIL.COM",
+        "password": "Ludovyck22"
     }
 
     result = envoyer_via_hubitat_bridge(url, headers, body)
