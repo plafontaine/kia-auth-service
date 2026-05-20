@@ -24,7 +24,7 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
     arg2 = urllib.parse.quote(json.dumps(kia_headers))
     arg3 = urllib.parse.quote(json.dumps(kia_body))
 
-    url = f"{BASE}/{arg1}/{arg2}/{arg3}?access_token={TOKEN}"
+    url = f"{BASE}/sendKiaRequest/{arg1}/{arg2}/{arg3}?access_token={TOKEN}"
 
     print("CALL:", url)
 
