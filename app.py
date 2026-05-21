@@ -569,6 +569,8 @@ KIA_PASS = os.environ.get("KIA_PASS")
 @app.route("/kia-playwright")
 def kia_playwright():
 
+    action = request.args.get("action", "vehicles")
+
     try:
         with sync_playwright() as p:
 
@@ -588,49 +590,73 @@ def kia_playwright():
             # ✅ LOGIN RAPIDE
             page.goto("https://kiaconnect.ca/login", timeout=15000)
 
-            page.wait_for_selector('input[name="email"], input[type="email"]', timeout=8000)
+            page.wait_for_selector(
+                'input[name="email"], input[type="email"]',
+                timeout=8000
+            )
 
-            page.fill('input[name="email"], input[type="email"]', KIA_USER)
-            page.fill('input[name="password"], input[type="password"]', KIA_PASS)
+            page.fill(
+                'input[name="email"], input[type="email"]',
+                KIA_USER
+            )
+
+            page.fill(
+                'input[name="password"], input[type="password"]',
+                KIA_PASS
+            )
 
             page.click('button[type="submit"]')
 
-            # 🔥 ATTENTE MINIMALE
+            # ✅ attente courte (important pour Render FREE)
             page.wait_for_timeout(4000)
 
-            # ✅ PAS DE DASHBOARD LENT
-            # ✅ APPEL DIRECT API (plus rapide)
-           data = page.evaluate("""
-           async () => {
-           try {
-            const res = await fetch('/tods/api/lstvhclsts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    from: 0
-                })
-            });
-            return await res.json();
-            } catch (e) {
-            return { error: e.toString() };
-            }
-            }
-            """)
+            # ✅ ACTION DYNAMIQUE
+            if action == "vehicles":
 
+                data = page.evaluate("""
+                    async () => {
+                        try {
+                            const res = await fetch('/tods/api/lstvhclsts', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    from: 0
+                                })
+                            });
+                            return await res.json();
+                        } catch (e) {
+                            return { error: e.toString() };
+                        }
+                    }
+                """)
+
+            else:
+
+                data = {
+                    "error": "action non supportée",
+                    "action": action
+                }
 
             browser.close()
 
             return jsonify({
                 "status": "ok",
+                "action": action,
                 "data": data
             })
 
     except Exception as e:
-        import traceback
         return jsonify({
             "error": str(e),
             "trace": traceback.format_exc()
         })
+
+
+@app.route("/")
+def home():
+    return "Kia Playwright OK ✅"
 
 
 @app.route("/kia-login")
@@ -710,6 +736,98 @@ def kia_data():
     except Exception as e:
         import traceback
         return jsonify({"error": str(e), "trace": traceback.format_exc()})
+
+@app.route("/kia-action")
+def kia_action():
+
+    action = request.args.get("action")
+
+    try:
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--single-process",
+                    "--no-zygote"
+                ]
+            )
+
+            page = browser.new_page()
+
+            # ✅ LOGIN RAPIDE
+            page.goto("https://kiaconnect.ca/login", timeout=15000)
+
+            page.wait_for_selector('input[name="email"], input[type="email"]', timeout=8000)
+
+            page.fill('input[name="email"], input[type="email"]', KIA_USER)
+            page.fill('input[name="password"], input[type="password"]', KIA_PASS)
+
+            page.click('button[type="submit"]')
+
+            page.wait_for_timeout(4000)
+
+            # ✅ ROUTING ACTION
+            if action == "vehicles":
+
+                data = page.evaluate("""
+                    async () => {
+                        const res = await fetch('/tods/api/lstvhclsts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ from: 0 })
+                        });
+                        return await res.json();
+                    }
+                """)
+
+            elif action == "status":
+
+                data = page.evaluate("""
+                    async () => {
+                        const res = await fetch('/tods/api/vehicleStatus', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: "{}"
+                        });
+                        return await res.json();
+                    }
+                """)
+
+            elif action == "lock":
+
+                data = page.evaluate("""
+                    async () => {
+                        const res = await fetch('/tods/api/lock', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: "{}"
+                        });
+                        return await res.json();
+                    }
+                """)
+
+            else:
+                data = {"error": "invalid action"}
+
+            browser.close()
+
+            return jsonify({
+                "status": "ok",
+                "action": action,
+                "data": data
+            })
+
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "error": str(e),
+            "trace": traceback.format_exc()
+        })
+
 
 
 @app.route("/")
