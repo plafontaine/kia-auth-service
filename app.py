@@ -572,26 +572,30 @@ def kia_playwright():
     try:
         with sync_playwright() as p:
 
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context()
-            page = context.new_page()
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage"]
+            )
 
-            # ✅ 1. ouvrir Kia
-            page.goto("https://kiaconnect.ca")
+            page = browser.new_page()
 
-            # ✅ 2. login
-            page.fill('input[type="email"]', KIA_USER)
+            page.goto("https://kiaconnect.ca/login")
+
+            page.wait_for_selector("input")
+
+            # ⚠️ selectors plus robustes
+            page.fill('input[type="email"], input[name="email"]', KIA_USER)
             page.fill('input[type="password"]', KIA_PASS)
 
             page.click('button[type="submit"]')
 
-            # ✅ attendre chargement
-            page.wait_for_load_state("networkidle")
+            page.wait_for_timeout(10000)
 
-            # ✅ attendre un peu (chargement data)
-            time.sleep(5)
+            # ✅ attendre après login
+            page.goto("https://kiaconnect.ca/cwp/overview")
 
-            # ✅ 3. récupérer les véhicules via JS
+            page.wait_for_timeout(5000)
+
             data = page.evaluate("""
                 async () => {
                     const res = await fetch('/tods/api/lstvhclsts', {
