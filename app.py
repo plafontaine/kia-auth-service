@@ -600,20 +600,23 @@ def kia_playwright():
 
             # ✅ PAS DE DASHBOARD LENT
             # ✅ APPEL DIRECT API (plus rapide)
-            data = page.evaluate("""
-                async () => {
-                    try {
-                        const res = await fetch('/tods/api/lstvhclsts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: "{}"
-                        });
-                        return await res.json();
-                    } catch (e) {
-                        return { error: e.toString() };
-                    }
-                }
+           data = page.evaluate("""
+           async () => {
+           try {
+            const res = await fetch('/tods/api/lstvhclsts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    from: 0
+                })
+            });
+            return await res.json();
+            } catch (e) {
+            return { error: e.toString() };
+            }
+            }
             """)
+
 
             browser.close()
 
