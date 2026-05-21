@@ -498,6 +498,27 @@ def test_login_mobile():
         }
     )
 
+# =============
+# TEST
+# ==========
+
+@app.route("/kia-direct-test")
+def kia_direct_test():
+    try:
+        vm = get_vm()
+
+        vehicles = vm.vehicles
+
+        return jsonify({
+            "status": "ok",
+            "vehicles": str(vehicles)
+        })
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        })
+
 
 
 @app.route("/")
