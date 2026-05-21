@@ -547,7 +547,67 @@ def kia_hubitat_final():
         body
     )
 
+from flask import Flask, jsonify
+from playwright.sync_api import sync_playwright
+import os
+import time
 
+app = Flask(__name__)
+
+KIA_USER = os.environ.get("KIA_USER")
+KIA_PASS = os.environ.get("KIA_PASS")
+
+
+@app.route("/kia-playwright")
+def kia_playwright():
+
+    try:
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+            page = context.new_page()
+
+            # ✅ 1. ouvrir Kia
+            page.goto("https://kiaconnect.ca")
+
+            # ✅ 2. login
+            page.fill('input[type="email"]', KIA_USER)
+            page.fill('input[type="password"]', KIA_PASS)
+
+            page.click('button[type="submit"]')
+
+            # ✅ attendre chargement
+            page.wait_for_load_state("networkidle")
+
+            # ✅ attendre un peu (chargement data)
+            time.sleep(5)
+
+            # ✅ 3. récupérer les véhicules via JS
+            data = page.evaluate("""
+                async () => {
+                    const res = await fetch('/tods/api/lstvhclsts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: "{}"
+                    });
+                    return await res.json();
+                }
+            """)
+
+            browser.close()
+
+            return jsonify({
+                "status": "ok",
+                "data": data
+            })
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        })
 
 
 
