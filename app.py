@@ -22,32 +22,34 @@ import datetime
 BASE = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824a/apps/246/devices/272"
 TOKEN = "57ad1d4c-edcc-4b8e-aaee-2371e9cc9d4e"
 
+import base64
+
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    # 🔥 1 seul payload JSON
-    payload = {
-    "url": kia_url,
-    "headers": kia_headers,
-    "body": urllib.parse.urlencode(kia_body) if kia_headers.get("Content-Type") == "application/x-www-form-urlencoded" else kia_body
-    }
+    # ✅ encode chaque partie en Base64 (super important)
+    b64_url = base64.b64encode(kia_url.encode()).decode()
+    b64_headers = base64.b64encode(json.dumps(kia_headers).encode()).decode()
+    b64_body = base64.b64encode(json.dumps(kia_body).encode()).decode()
 
+    # ✅ fusion des arguments
+    args = f"{b64_url},{b64_headers},{b64_body}"
 
-    # ✅ encoder complètement
-    encoded = urllib.parse.quote(json.dumps(payload), safe='')
+    # ✅ encode URL
+    args_encoded = requests.utils.quote(args)
 
-    # ✅ URL finale
-    url = f"{BASE}/sendKiaRequest/{encoded}?access_token={TOKEN}"
+    # ✅ appel Maker API
+    url = f"{BASE}/sendKiaRequest/{args_encoded}?access_token={TOKEN}"
 
     print("CALL HUBITAT:")
     print(url)
 
-    # ✅ appeler Hubitat
     response = requests.get(url)
 
     print("STATUS HUBITAT:", response.status_code)
     print("RESPONSE HUBITAT:", response.text)
 
-    return "REQUEST SENT"
+    return response.text
+
 
 
 
@@ -525,38 +527,30 @@ def kia_direct_test():
 
 import requests
 
-@app.route("/kia-real-test")
-def kia_real_test():
+@app.route("/kia-hubitat-final")
+def kia_hubitat_final():
 
-    url = "https://kiaconnect.ca/tods/api/lstvhclsts"
     headers = {
-    "Accesstoken": "eyJlbmMiOiJTVVJOUi9BRkI3U2REOHViSkRpc0p4ZjFFZ3RmckU5N25XNWFqRGlaNGl5WUFIMXNHM1h3OVY4WmdXbnZOQW9yM2xnbUdGWmdHZDZLWVJSVjJLVG9EVElNLytISExzK005TUwveWg2aEdTdUNGdk1VUEpZSmFXQStHQlN1a05ZZU5CSnJpZ2V2ZHp6K2FISlkvM05CeTVRL2NJWjdHUnNpY0M5UDJ5MkY3Q2FmQmwzRzNrTW1ncUpuQmVRWFdBSlNIRE1XMVg1b1NOSmJscUFDenBnUWN2VHVieHVkU2JhMnhueUFzSElGRGpUWkxjNTlRZkxYVEEwRkRKRWh6RXFMQ3FZZ2pEZktTWmJLNXRybWdGcC9NTUFsc2d6SFU0Z1I0Nll5SEtrRGIyWDlXc3QwaHBFWjF3eTI0QkM3SldHc1BsS3JIS1hVd01oWFpsdGhJR0dDa2xMUWtKdHAzYlV0WVZKdWpiSTlhbHkvQWlVajh6dEx5MzJRTU9icytwaGozRUdiWXdRWVJ5RWkxSUxxOVo2ZEhTZWZ5aVd5Y3VRWjVxajFoM1RCd3N1eWZwaGZrU0NkQjlLZldOaENyZXFsNlg4ajZlSEdiOHBCZ3NMemhVcURxQVljUmYyRlVhZGFJMXhJWFNIMTU2cU42VnFzaVA3aUJqOTZIdk0yWEF5Q0k5Z1k0TURQNng4Y3ZoeXN1aURZajRkMTR5eE95WVRMSjczMVZMcWN1NngzRUZHY3VSVHpXc3JEcmR2VjkzWmphdWkwdlpWbWNxOFVVMVRrd0dPUFZ0NnJxYmlJZkgxektLTTNCdXpwUThPWlJMR2ZrNkYrcjBYZ0tNQXIvNEtHSTJHUWpJYjIrZ2xZNDhPaGJNQUN6NGp6aS9nSDdlbExlbHV3Z0JHYTJrZVBybWlEOXRnb0U2SUZIck1UQmNqdzFaRTBNOFUyanRUVGd1TmNoV1JqWjRsd09ibVhFVlZjZDhJaE55N2RPL3cvdmZLMmFCZTFYRWNWT3A5MUZzelQyZXp5SDZvRXRQZWVrWmtLb2gvcGxxcVZ1MmhEaXhRZG9qUzd0cktzOWY5S2xETDF4TEE5dW1mSnh1UENNWjZLQkNoSWN3Tk5SOTZ4L0VIVDlKZHVZQ1hXWDVJakR4V3JWVHExb0VDOVQyUmw4RU1JMWg1VHU3NXZjNFE4Q2puRHRZejJGell5ZWlGMkxzR1pOekRtY3NVcmVGZ2FKOVdaS1Yrc0FBWmlVUzZMS3BLeU1wblRzUGh0OXBGeGdiaFl6amVrRENwM212ZWhlQlpkZFNRb2YwVEt0Nk93UG1HTUpMQjNBRGxTQjdIL0R0Y0J3NkFPZFluZnpOUkQxdHc5L0c4dVNTdVlDMTcwR3I4cGlmS0YyUmc5OUg4NEN2RjJHaEVmMnZrPSIsImtleSI6ImNSWlZESmQ3Smo1M2lyODhTTTl3UG9ZdzBQVk9MR3NEZ0MwTzJNS2RhTXlJSHVoUG9yZDZkcFc1SGNhdDg2NW5rQi9DTHlDa2dMZDladDc3YlpyY25BPT0ifQ==",
-    "Content-Type": "application/json;charset=UTF-8",
-    "Origin": "https://kiaconnect.ca",
-    "Referer": "https://kiaconnect.ca/cwp/overview",
-    "User-Agent": "Mozilla/5.0",
-    "Accept": "application/json, text/plain, */*",
-    "Language": "1",
-    "Offset": "-4",
-
-    # 🔥 AJOUTER CECI
-    "Cookie": "__cf_bm=NQ6Y8VIMz5HOYVqDXT66ax3bRC5fpz4d0Y4H2WN0qxA-1779375608.893569-1.0.1.1-wG2YcDDp_FsPzRKn6mwTkQeCk7fb6LLCHW8aYJeVXKf_hYB_L8VcUg5E_gbgampIKsj5Opm7gFLv0H2cZxo5zgEkNPpq6uFxIuOIehnI.Vbxb7dvIPxaa1Fx2FQJ5zH9"
+        "Accesstoken": "TON_TOKEN_NAVIGATEUR",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://kiaconnect.ca",
+        "Referer": "https://kiaconnect.ca/cwp/overview",
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json, text/plain, */*",
+        "Language": "1",
+        "Offset": "-4"
     }
 
     body = {
         "vehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
     }
 
-    try:
-        response = requests.post(url, headers=headers, json=body)
+    return envoyer_via_hubitat_bridge(
+        "https://kiaconnect.ca/tods/api/lstvhclsts",
+        headers,
+        body
+    )
 
-        return {
-            "status": response.status_code,
-            "response": response.text[:1000]
-        }
-
-    except Exception as e:
-        return {"error": str(e)}
 
 
 @app.route("/")
