@@ -26,17 +26,17 @@ import base64
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    b64_url = base64.b64encode(kia_url.encode()).decode()
-    b64_headers = base64.b64encode(json.dumps(kia_headers).encode()).decode()
-    b64_body = base64.b64encode(json.dumps(kia_body).encode()).decode()
+    payload = {
+        "url": kia_url,
+        "headers": kia_headers,
+        "body": kia_body
+    }
 
-    # 🔥 IMPORTANT → arguments séparés par /
-    args = f"{b64_url}/{b64_headers}/{b64_body}"
+    # ✅ encode en JSON simple (PAS base64)
+    encoded = urllib.parse.quote(json.dumps(payload), safe='')
 
-    args_encoded = urllib.parse.quote(args, safe='')
-
-    # 🔥 IMPORTANT → inclure sendKiaRequest
-    url = f"{BASE}/sendKiaRequest/{args_encoded}?access_token={TOKEN}"
+    # ✅ UNE SEULE variable pour éviter problème parsing
+    url = f"{BASE}/sendKiaRequest/{encoded}?access_token={TOKEN}"
 
     print("CALL HUBITAT:")
     print(url)
