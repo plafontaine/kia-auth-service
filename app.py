@@ -578,7 +578,6 @@ def kia_playwright():
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
                     "--disable-dev-shm-usage",
-                    "--disable-gpu",
                     "--single-process",
                     "--no-zygote"
                 ]
@@ -586,23 +585,41 @@ def kia_playwright():
 
             page = browser.new_page()
 
-            # ✅ charger login
+            # ✅ LOGIN RAPIDE
             page.goto("https://kiaconnect.ca/login", timeout=15000)
 
-            page.wait_for_selector("input", timeout=10000)
+            page.wait_for_selector('input[name="email"], input[type="email"]', timeout=8000)
 
             page.fill('input[name="email"], input[type="email"]', KIA_USER)
             page.fill('input[name="password"], input[type="password"]', KIA_PASS)
 
             page.click('button[type="submit"]')
 
-            # 🔥 IMPORTANT: timeout court
+            # 🔥 ATTENTE MINIMALE
             page.wait_for_timeout(4000)
+
+            # ✅ PAS DE DASHBOARD LENT
+            # ✅ APPEL DIRECT API (plus rapide)
+            data = page.evaluate("""
+                async () => {
+                    try {
+                        const res = await fetch('/tods/api/lstvhclsts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: "{}"
+                        });
+                        return await res.json();
+                    } catch (e) {
+                        return { error: e.toString() };
+                    }
+                }
+            """)
 
             browser.close()
 
             return jsonify({
-                "status": "login_attempt_done"
+                "status": "ok",
+                "data": data
             })
 
     except Exception as e:
