@@ -536,25 +536,32 @@ def kia_hubitat_final():
         "Referer": "https://kiaconnect.ca/cwp/overview",
         "User-Agent": "Mozilla/5.0",
         "Accept": "application/json, text/plain, */*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-        "Host": "kiaconnect.ca",
         "Language": "1",
         "Offset": "-4",
-
-        # ✅ IMPORTANT
         "VehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
     }
 
-    body = {
-        "vehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
-    }
+    # 🔥 1. INIT CONTEXTE
+    envoyer_via_hubitat_bridge(
+        "https://kiaconnect.ca/tods/api/vhclst",
+        headers,
+        {}
+    )
 
+    # 🔥 2. (optionnel mais recommandé)
+    envoyer_via_hubitat_bridge(
+        "https://kiaconnect.ca/tods/api/myvehicle",
+        headers,
+        {}
+    )
+
+    # 🔥 3. CALL FINAL
     return envoyer_via_hubitat_bridge(
         "https://kiaconnect.ca/tods/api/lstvhclsts",
         headers,
-        body
+        {}
     )
+
 
 
 
