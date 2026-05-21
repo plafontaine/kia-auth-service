@@ -503,18 +503,15 @@ def kia_direct_test():
     try:
         vm = get_vm()
 
-        vehicles = vm.vehicles  # ✅ seul appel nécessaire
-
-        print("DEBUG VEHICLES:", vehicles)
-
         return jsonify({
             "status": "ok",
-            "vehicles": str(vehicles)
+            "raw": str(vm)
         })
 
     except Exception as e:
         return jsonify({
-            "error": str(e)
+            "error": str(e),
+            "trace": traceback.format_exc()
         })
 
 
