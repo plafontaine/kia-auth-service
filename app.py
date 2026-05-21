@@ -573,61 +573,43 @@ def kia_playwright():
         with sync_playwright() as p:
 
             browser = p.chromium.launch(
-            headless=True,
-            args=[
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--disable-software-rasterizer",
-            "--disable-background-networking",
-            "--disable-background-timer-throttling",
-            "--disable-renderer-backgrounding",
-            "--disable-extensions",
-            "--single-process",
-            "--no-zygote"
-            ]
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--disable-background-networking",
+                    "--single-process",
+                    "--no-zygote"
+                ]
             )
-
 
             context = browser.new_context()
             page = context.new_page()
 
-            print("STEP 1: goto site")
-            page.goto("https://kiaconnect.ca")
+            print("🔹 STEP 1: Open login page")
+            page.goto("https://kiaconnect.ca/login")
 
-            page.wait_for_timeout(5000)
-
-            print("Current URL:", page.url)
-
-            # 🔥 DEBUG: voir HTML
-            content = page.content()
-
-            print("PAGE LOADED LENGTH:", len(content))
-
-            # 🔥 chercher inputs
+            # ✅ attendre les champs login
             page.wait_for_selector("input", timeout=15000)
 
-            print("Inputs found ✅")
-
-            # ✅ selectors robustes
+            print("🔹 STEP 2: Fill login")
             page.fill('input[name="email"], input[type="email"]', KIA_USER)
             page.fill('input[name="password"], input[type="password"]', KIA_PASS)
 
+            print("🔹 STEP 3: Click login")
             page.click('button[type="submit"]')
 
-            print("Clicked login")
+            # ✅ attendre que la page charge après login
+            page.wait_for_load_state("networkidle")
 
-            page.wait_for_timeout(10000)
-
-            print("After login URL:", page.url)
-
-            # 🔥 aller direct dashboard
+            print("🔹 STEP 4: Go to dashboard")
             page.goto("https://kiaconnect.ca/cwp/overview")
 
-            page.wait_for_timeout(8000)
+            page.wait_for_load_state("networkidle")
 
-            print("Loading data...")
+            print("🔹 STEP 5: Get vehicles")
 
             data = page.evaluate("""
                 async () => {
@@ -637,13 +619,14 @@ def kia_playwright():
                             headers: { 'Content-Type': 'application/json' },
                             body: "{}"
                         });
-                        return await res.text();
+                        return await res.json();
                     } catch (e) {
-                        return {error: e.toString()};
+                        return { error: e.toString() };
                     }
                 }
             """)
 
+            context.close()
             browser.close()
 
             return jsonify({
@@ -652,7 +635,6 @@ def kia_playwright():
             })
 
     except Exception as e:
-        import traceback
         return jsonify({
             "error": str(e),
             "trace": traceback.format_exc()
