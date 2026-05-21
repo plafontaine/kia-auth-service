@@ -547,10 +547,20 @@ def kia_hubitat_final():
         body
     )
 
+
+import subprocess
+
+def ensure_playwright():
+    try:
+        subprocess.run(["playwright", "install", "chromium"], check=True)
+    except Exception as e:
+        print("Playwright install error:", e)
+
+ensure_playwright()
+
+
 from flask import Flask, jsonify
 from playwright.sync_api import sync_playwright
-import os
-import time
 
 app = Flask(__name__)
 
