@@ -1,5 +1,5 @@
 flask==3.0.3
 gunicorn
-hyundai-kia-connect-api==4.11.0
+git+https://github.com/Hyundai-Kia-Connect/hyundai-kia-connect-api.git
 cloudscraper>=1.2.71
 js2py>=0.74
