@@ -507,7 +507,7 @@ def kia_direct_test():
     try:
         vm = get_vm()
 
-        vehicles = vm.vehicles
+        vehicles = vm.get_vehicles()   # 🔥 IMPORTANT
 
         return jsonify({
             "status": "ok",
