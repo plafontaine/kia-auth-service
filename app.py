@@ -26,18 +26,16 @@ import base64
 
 def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
 
-    # ✅ encode chaque partie en Base64 (super important)
     b64_url = base64.b64encode(kia_url.encode()).decode()
     b64_headers = base64.b64encode(json.dumps(kia_headers).encode()).decode()
     b64_body = base64.b64encode(json.dumps(kia_body).encode()).decode()
 
-    # ✅ fusion des arguments
-    args = f"{b64_url},{b64_headers},{b64_body}"
+    # 🔥 IMPORTANT → arguments séparés par /
+    args = f"{b64_url}/{b64_headers}/{b64_body}"
 
-    # ✅ encode URL
-    args_encoded = requests.utils.quote(args)
+    args_encoded = urllib.parse.quote(args, safe='')
 
-    # ✅ appel Maker API
+    # 🔥 IMPORTANT → inclure sendKiaRequest
     url = f"{BASE}/sendKiaRequest/{args_encoded}?access_token={TOKEN}"
 
     print("CALL HUBITAT:")
@@ -49,6 +47,7 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
     print("RESPONSE HUBITAT:", response.text)
 
     return response.text
+
 
 
 
