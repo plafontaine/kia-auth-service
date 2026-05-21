@@ -616,8 +616,6 @@ def kia_playwright():
 @app.route("/kia-login")
 def kia_login():
 
-    global browser_context
-
     try:
         with sync_playwright() as p:
 
@@ -626,29 +624,37 @@ def kia_login():
                 args=[
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--single-process"
                 ]
             )
 
-            browser_context = browser.new_context()
-            page = browser_context.new_page()
+            page = browser.new_page()
 
-            page.goto("https://kiaconnect.ca/login")
+            page.goto("https://kiaconnect.ca/login", timeout=15000)
 
-            page.wait_for_selector("input")
+            page.wait_for_selector('input[name="email"], input[type="email"]', timeout=8000)
 
             page.fill('input[name="email"], input[type="email"]', KIA_USER)
             page.fill('input[name="password"], input[type="password"]', KIA_PASS)
 
             page.click('button[type="submit"]')
 
-            page.wait_for_timeout(5000)
+            # 🔥 IMPORTANT : on coupe AVANT délai long
+            page.wait_for_timeout(3000)
 
-            return jsonify({"status": "logged_in ✅"})
+            browser.close()
+
+            return jsonify({
+                "status": "login_sent_fast ✅"
+            })
 
     except Exception as e:
         import traceback
-        return jsonify({"error": str(e), "trace": traceback.format_exc()})
+        return jsonify({
+            "error": str(e),
+            "trace": traceback.format_exc()
+        })
 
 @app.route("/kia-data")
 def kia_data():
