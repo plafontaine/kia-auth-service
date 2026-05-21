@@ -523,7 +523,38 @@ def kia_direct_test():
             "error": str(e)
         })
 
+import requests
 
+@app.route("/kia-real-test")
+def kia_real_test():
+
+    url = "https://kiaconnect.ca/tods/api/lstvhclsts"
+
+    headers = {
+        "Accesstoken": "COLLE_ICI_TON_TOKEN",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://kiaconnect.ca",
+        "Referer": "https://kiaconnect.ca/cwp/overview",
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json, text/plain, */*",
+        "Language": "1",
+        "Offset": "-4"
+    }
+
+    body = {
+        "vehicleId": "COLLE_ICI_TON_VEHICLE_ID"
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=body)
+
+        return {
+            "status": response.status_code,
+            "response": response.text[:1000]
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.route("/")
