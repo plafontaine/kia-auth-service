@@ -574,24 +574,29 @@ def kia_playwright():
 
             browser = p.chromium.launch(
                 headless=True,
-                args=["--no-sandbox", "--disable-dev-shm-usage"]
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--single-process"
+                ]
             )
 
             page = browser.new_page()
 
+            # ✅ page login directe
             page.goto("https://kiaconnect.ca/login")
 
             page.wait_for_selector("input")
 
-            # ⚠️ selectors plus robustes
             page.fill('input[type="email"], input[name="email"]', KIA_USER)
-            page.fill('input[type="password"]', KIA_PASS)
+            page.fill('input[type="password"], input[name="password"]', KIA_PASS)
 
             page.click('button[type="submit"]')
 
             page.wait_for_timeout(10000)
 
-            # ✅ attendre après login
+            # ✅ aller à dashboard
             page.goto("https://kiaconnect.ca/cwp/overview")
 
             page.wait_for_timeout(5000)
@@ -600,9 +605,7 @@ def kia_playwright():
                 async () => {
                     const res = await fetch('/tods/api/lstvhclsts', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: "{}"
                     });
                     return await res.json();
@@ -617,9 +620,12 @@ def kia_playwright():
             })
 
     except Exception as e:
+        import traceback
         return jsonify({
-            "error": str(e)
+            "error": str(e),
+            "trace": traceback.format_exc()
         })
+
 
 
 
