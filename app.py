@@ -577,38 +577,61 @@ def kia_playwright():
                 args=[
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--single-process"
+                    "--disable-dev-shm-usage"
                 ]
             )
 
-            page = browser.new_page()
+            context = browser.new_context()
+            page = context.new_page()
 
-            # ✅ page login directe
-            page.goto("https://kiaconnect.ca/login")
-
-            page.wait_for_selector("input")
-
-            page.fill('input[type="email"], input[name="email"]', KIA_USER)
-            page.fill('input[type="password"], input[name="password"]', KIA_PASS)
-
-            page.click('button[type="submit"]')
-
-            page.wait_for_timeout(10000)
-
-            # ✅ aller à dashboard
-            page.goto("https://kiaconnect.ca/cwp/overview")
+            print("STEP 1: goto site")
+            page.goto("https://kiaconnect.ca")
 
             page.wait_for_timeout(5000)
 
+            print("Current URL:", page.url)
+
+            # 🔥 DEBUG: voir HTML
+            content = page.content()
+
+            print("PAGE LOADED LENGTH:", len(content))
+
+            # 🔥 chercher inputs
+            page.wait_for_selector("input", timeout=15000)
+
+            print("Inputs found ✅")
+
+            # ✅ selectors robustes
+            page.fill('input[name="email"], input[type="email"]', KIA_USER)
+            page.fill('input[name="password"], input[type="password"]', KIA_PASS)
+
+            page.click('button[type="submit"]')
+
+            print("Clicked login")
+
+            page.wait_for_timeout(10000)
+
+            print("After login URL:", page.url)
+
+            # 🔥 aller direct dashboard
+            page.goto("https://kiaconnect.ca/cwp/overview")
+
+            page.wait_for_timeout(8000)
+
+            print("Loading data...")
+
             data = page.evaluate("""
                 async () => {
-                    const res = await fetch('/tods/api/lstvhclsts', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: "{}"
-                    });
-                    return await res.json();
+                    try {
+                        const res = await fetch('/tods/api/lstvhclsts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: "{}"
+                        });
+                        return await res.text();
+                    } catch (e) {
+                        return {error: e.toString()};
+                    }
                 }
             """)
 
