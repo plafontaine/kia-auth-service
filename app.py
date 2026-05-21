@@ -579,66 +579,39 @@ def kia_playwright():
                     "--disable-setuid-sandbox",
                     "--disable-dev-shm-usage",
                     "--disable-gpu",
-                    "--disable-background-networking",
                     "--single-process",
                     "--no-zygote"
                 ]
             )
 
-            context = browser.new_context()
-            page = context.new_page()
+            page = browser.new_page()
 
-            print("🔹 STEP 1: Open login page")
-            page.goto("https://kiaconnect.ca/login")
+            # ✅ charger login
+            page.goto("https://kiaconnect.ca/login", timeout=15000)
 
-            # ✅ attendre les champs login
-            page.wait_for_selector("input", timeout=15000)
+            page.wait_for_selector("input", timeout=10000)
 
-            print("🔹 STEP 2: Fill login")
             page.fill('input[name="email"], input[type="email"]', KIA_USER)
             page.fill('input[name="password"], input[type="password"]', KIA_PASS)
 
-            print("🔹 STEP 3: Click login")
             page.click('button[type="submit"]')
 
-            # ✅ attendre que la page charge après login
-            page.wait_for_load_state("networkidle")
+            # 🔥 IMPORTANT: timeout court
+            page.wait_for_timeout(4000)
 
-            print("🔹 STEP 4: Go to dashboard")
-            page.goto("https://kiaconnect.ca/cwp/overview")
-
-            page.wait_for_load_state("networkidle")
-
-            print("🔹 STEP 5: Get vehicles")
-
-            data = page.evaluate("""
-                async () => {
-                    try {
-                        const res = await fetch('/tods/api/lstvhclsts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: "{}"
-                        });
-                        return await res.json();
-                    } catch (e) {
-                        return { error: e.toString() };
-                    }
-                }
-            """)
-
-            context.close()
             browser.close()
 
             return jsonify({
-                "status": "ok",
-                "data": data
+                "status": "login_attempt_done"
             })
 
     except Exception as e:
+        import traceback
         return jsonify({
             "error": str(e),
             "trace": traceback.format_exc()
         })
+
 
 
 
