@@ -1,3 +1,4 @@
+playwright
 flask==3.0.3
 gunicorn
 hyundai-kia-connect-api>=4.11.0
