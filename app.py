@@ -501,18 +501,28 @@ def test_login_mobile():
 @app.route("/kia-direct-test")
 def kia_direct_test():
     try:
-        vm = get_vm()
+        vm = VehicleManager(
+            region=2,
+            brand=1,
+            username=USERNAME,
+            password=PASSWORD,
+            pin=PIN
+        )
+
+        vm.login()
+
+        vehicles = vm.vehicles
 
         return jsonify({
             "status": "ok",
-            "raw": str(vm)
+            "vehicles": str(vehicles)
         })
 
     except Exception as e:
         return jsonify({
-            "error": str(e),
-            "trace": traceback.format_exc()
+            "error": str(e)
         })
+
 
 
 
