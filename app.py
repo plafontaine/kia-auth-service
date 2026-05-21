@@ -539,11 +539,14 @@ def kia_hubitat_final():
         "Language": "1",
         "Offset": "-4",
 
-        # 🔥 CRITIQUE
+        # ✅ GARDE ceci
         "VehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
     }
 
-    body = {}   # ✅ PAS de vehicleId ici
+    body = {
+        # 🔥 AJOUT CRITIQUE
+        "vehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
+    }
 
     return envoyer_via_hubitat_bridge(
         "https://kiaconnect.ca/tods/api/lstvhclsts",
