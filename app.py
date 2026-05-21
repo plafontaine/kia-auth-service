@@ -29,28 +29,16 @@ def envoyer_via_hubitat_bridge(kia_url, kia_headers, kia_body):
     payload = {
         "url": kia_url,
         "headers": kia_headers,
-        "body": kia_body
+        "body": kia_body  # ✅ PAS json.dumps ici
     }
 
-    # ✅ encode en JSON simple (PAS base64)
     encoded = urllib.parse.quote(json.dumps(payload), safe='')
 
-    # ✅ UNE SEULE variable pour éviter problème parsing
     url = f"{BASE}/sendKiaRequest/{encoded}?access_token={TOKEN}"
-
-    print("CALL HUBITAT:")
-    print(url)
 
     response = requests.get(url)
 
-    print("STATUS HUBITAT:", response.status_code)
-    print("RESPONSE HUBITAT:", response.text)
-
     return response.text
-
-
-
-
 
 
 
@@ -530,37 +518,26 @@ import requests
 def kia_hubitat_final():
 
     headers = {
-        "Accesstoken": "eyJlbmMiOiJTVVJOUjJJdTcxM3IyQTdWOVIxcVl0cnU5QWVOTWFMM2xGdHEzWm9WWWJ2dkV4QWJobmpnVGdCMU13dkYyb3lZU3BBZW9nMCtreExvRVJGa2lWd3ZxcGFYSUxSRm9OV3RFV0psb0t2aWhiODJibkpDOUlUUGszVSttT0htc3RPMHRMY1pFbzRUbTNUbFcwTU1xUlRpZ2wrMFM1WHcrQnRUSmpUSnVQWU9CZ3FaWkxtaWx3R05CSFZMdHFYdEF3ZDNCdmMrQ210QU1CbEJ0SHVYOHkwdnR6QUlKK0prSFFIOTM2TE1Ydkl2bFBFZTdLdXhZOXdTa05jS3Jwd1BiT0UrU3RSMjVBVUhSaUNwYzJ2Y1BXanVabllTN3RIODdtNldELzdxUUZyQ1pYZ1RiVTBPK0Uwa2dSdGhwTDdlK1FuY2dQbXNuRC9USytTUDBzMGFKOHRBamRtekpqUFBMSC92b0xXL3djVFk4NlBmQ3U1MUdoWXVQVHVmNlNKUGFMSlFjMnM4Q1gwR2pUZW9PQjJKWFM4dURVQjJDNWQweDRVTS9qbzdZUnNzRlhXNUU1VTJDbEl5UlVXODVlN3padFNzRXpsYnlFcDFmL2dNMkpwN2pZQ1VGSFhQbW1ZVXhnTUNPTUk1Q3k4K0dZNHZHUTRGYk9ZQ292Ykt3VXlPNmNaUTVudWk1VVlrbkdhWTdsSDg4RjFCcEhMT1pXdS93U1NmWjAwS0hva0JrTWdZU0wvUGUvdDVPRmlCclFwaE9rZ0s1aElqSXBkajZOUWI0L1ZkMU9GSXNjU1N4Y2VVOGdSSFg4RUFoT1dVSElaa3RzU2owUDRBN2JBYjlERnNKdjV5c25BQ1hLelZyKzAyZWM0VzFKZDZvSGhGNUI0UjhDM3hrUlNZTjlVYmRCMThucTVBdzVSRFgvL3BIV1RnS2I0VFd3YkZpeXptSGdSNzVEcFllWC95dUVZOFQ5OFhzTDkxT1dia2ViQkJGQkpKN2lqaFNCWkJLZGtyN1J0MU9pRmw2M1Vja1h3ZnYrU1N5bHp6V2FjekxxejZvd3YxQ3FtRzdmbm9CUUhuTjZlaEc4TTBRMStGTVh3ZDNCakFybE5XRnpNYTk5b2pyVW5XWm1MUHR4WUxJRWQwMU9saC9yRkVUWE5TTURTZnY3Sno0VE45UGJmYjVYUGZyVzhUeHdZQnZGaEFhdXFUb2dYTDJYL2I0c3RPNkhmUmhBSkVaZHhVNThiemRDZnRkYmU1UTdHdVh1ODFhUHVBR0FONnpvcWNlbTVRNER1OW1nTVFDakJNMGhmTnNHbkRWM1JlcWVLWFZQQi8yV21Ha082anFXbUZrMWRkeFkvWEpyNXNLOWVlQWZWR200U1BFQ1JZbkQ4R3diR25WdjAwR0o5Ulc4a25adFJlUU9ZPSIsImtleSI6Im5OUnJhbHpzMlU1MVZNa21WZmVIQWkzU2twcFM4dHp2K2l0RFVSL0tUM0VhTCsvQ3EyZnRZb0kwUjM5YXpTNU5Sa0JOQW5hMHpVTVpvWVVHdHZSb0Z3PT0ifQ==",
-        "Content-Type": "application/json;charset=UTF-8",
+        "Accesstoken": "eyJlbmMiOiJTVVJOUncwZTA1TFZ1YldnUHRGOEJDcDUzZmhoNXhtMDdmSTBFRkplbFBWbXd4NTFSR2ljUFJyYjljOHNIaDhxWFdVWWRGeUdsdlFqM3dWSzNnaFFlbWhHejR6eGVvVVpOUkpBdUNqSVZELzU0ZTRCU2Z4ZVFadjhZZnovQjVpYVA2enRJRFJzQ3c3VTFoSDJwK2FMOHBka3hxWk5HZk1GdEFqTlpkNk5EZGJOQ0JwOGMyRmp6QzhzSStnNURCZmRUekdjTHB1bEpRQnNOSFNQMTBOTGxIZTVoTzF5RzJZK2t1Q0M4WVk4Sm1XZVppNHo5RWdmT01PTHhTUTVtT1AyWDUydXNDeTNVODJSekxRckQvOGlXRXlqNWM5VmNjZjdBaTJhTWZuZUFWdHBWQ0xtTS9NSVhEM05PaXpWa1BWQTJab2wxMnRDZ2xJVXFCT1pqQUJ5Y3hMN3dqTFZPZm05ZVJLUEJocWJtTUF1K1pOeG5Nek1sRVY5NS9uVXN1Z3U3UUd0TkJhYzlNTmN1T2FBWjZhYVNqMU1RK3NLZnNFaFBEdGdEalFIVXo0ZWNkOVZ2dVdXZ1VMWkc5cnZ5blY3amNFZlpDdkZPakI0dXgvQ2V5dlVaazFsd2t6Mnl5ZWp6MjVlK2pLZnJiZ3BVR1JqSC9mK0owdktIemVMOEp6MS90YmY2QUs5NWwxZlJ5NmQwajdKaHQ5TFlLcVdUSnZySG9IZGtPWnR0VEdXVWVZbUg3VEErK2NhS0d0V0p1dGJyK3pnTm9DU3hXYzQ5dXVNYlpUazhVOTlxYUtpUXF4eS9GaVJ4TjZlakdKSGFSbXA3V3ZqcmNSNXJBY3VKeDdRaUJXTFByZjNQeXFtdC82dlJydCtDd2pDMmc0Q2owZmNmRHkvdmZrenovaTVCN0FPaFRMNkhwOWFXNHM5SVBmU29yS2VTeHFDRVBvUk1tTjFOR3VOVnFuMmNBODBrR0J1RUZHSFI3SWtudUhuRmtFZmViNklxTW9GQXNjQlp4TXhUZDdvdzZaeEhib2V3ZzBxWGpVd29QM210Qlh5ZlB5eGtici92ODNOUnBYMlh6bmFmeSt4LysyRk1lK3RJK3FpUURQT2dJdlBVeTcvenRMZVFLZ0tJUFNpQkJsaGxVczJacDB4R0NuQ3IyNTlZYkE1Ni9lMk1hMnVHM1I4aWN1Z29ObUpwUmdmb0VtaTgvZm9qMzRUZXNlY2IrSFROM250R2JiakxnUnFBWS9Va3JNSm50ZGhqOUljZVJjcGFaR2NQM1JWcjRFai9pWnhodlA2L2N2bSsxYTVBbzlKTnNrdWc3TzVNMDRjVFkyVlBtZE4zMkRxOTErcUNlY05PeTFxVUZqM1Y1VjZZWEJRdHdYZWgwaTBCU0VjQTRjWUU3R25qdHpHbTBnPSIsImtleSI6IkMrZU1JSWJXenNHQ1FzNUpDUDVaRktKbjFnNTJuY3o1RVlvQjIxNWZkd3NRamkwVi9JZ1FpVmFKSDFQaXJDS3JvUGhVYlNpSW1CU1I4RmR4TUZ3Y0FRPT0ifQ==",
+        "Content-Type": "application/json",
         "Origin": "https://kiaconnect.ca",
-        "Referer": "https://kiaconnect.ca/cwp/overview",
-        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://kiaconnect.ca",  # ⚠️ IMPORTANT: PAS /cwp/overview
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "fr-CA,fr;q=0.9,en-US;q=0.8,en;q=0.7",
         "Language": "1",
-        "Offset": "-4",
-        "VehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
+        "Offset": "-4"
     }
 
-    # 🔥 1. INIT CONTEXTE
-    envoyer_via_hubitat_bridge(
-        "https://kiaconnect.ca/tods/api/vhclst",
-        headers,
-        {}
-    )
+    # 🔥 CRITIQUE
+    body = "{}"   # ✅ STRING, PAS dict
 
-    # 🔥 2. (optionnel mais recommandé)
-    envoyer_via_hubitat_bridge(
-        "https://kiaconnect.ca/tods/api/myvehicle",
-        headers,
-        {}
-    )
-
-    # 🔥 3. CALL FINAL
     return envoyer_via_hubitat_bridge(
         "https://kiaconnect.ca/tods/api/lstvhclsts",
         headers,
-        {}
+        body
     )
+
 
 
 
