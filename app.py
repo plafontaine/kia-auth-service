@@ -536,15 +536,17 @@ def kia_hubitat_final():
         "Referer": "https://kiaconnect.ca/cwp/overview",
         "User-Agent": "Mozilla/5.0",
         "Accept": "application/json, text/plain, */*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Host": "kiaconnect.ca",
         "Language": "1",
         "Offset": "-4",
 
-        # ✅ GARDE ceci
+        # ✅ IMPORTANT
         "VehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
     }
 
     body = {
-        # 🔥 AJOUT CRITIQUE
         "vehicleId": "y6m4U94bNgtgeYs7VKpQjQ=="
     }
 
