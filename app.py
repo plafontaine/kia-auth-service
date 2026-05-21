@@ -503,14 +503,13 @@ def kia_direct_test():
     try:
         vm = get_vm()
 
-        # 🔥 FORCER LE LOAD CORRECT
-        vehicles = vm.vehicles  # initialise
-        if not vehicles:
-            vm.update_all_vehicles()  # 🔥 important
+        vehicles = vm.vehicles  # ✅ seul appel nécessaire
+
+        print("DEBUG VEHICLES:", vehicles)
 
         return jsonify({
             "status": "ok",
-            "vehicles": str(vm.vehicles)
+            "vehicles": str(vehicles)
         })
 
     except Exception as e:
