@@ -530,15 +530,18 @@ def kia_real_test():
 
     url = "https://kiaconnect.ca/tods/api/lstvhclsts"
 
-    headers = {
-        "Accesstoken": "COLLE_ICI_TON_TOKEN",
-        "Content-Type": "application/json;charset=UTF-8",
-        "Origin": "https://kiaconnect.ca",
-        "Referer": "https://kiaconnect.ca/cwp/overview",
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "application/json, text/plain, */*",
-        "Language": "1",
-        "Offset": "-4"
+   headers = {
+    "Accesstoken": "eyJlbmMiOiJTVVJOUjJZd2VEdnhGT3grZFpLazJJVXR6TzhLMzZyZm5nWUExZmpsS1pWMEk3N3pQTVd4eDRsSTMvdUxFVjRkNjlUeEtUbnpjNW9UR0QzV2dnUUhEUTR1dDFQckFybjM3WW8rTlNxS0dXd0pDdCtFQ2NpVHV4K0V6ajQ1dkE3SmNkNitleEFJVzAvTkpGdDNPMTlVVHYwK1BHd3h1Y1p2S0lGamE0eHQ0THN0Uk5uUERXRThUWFFUVWpXazJwREptZEtkNVdQRmRLQUZWdlpkZWRuNStlYVN1TmIvNFN5b2ZBYm96V3BqWWwwV2xIYlNTWXZ5dmRpYisySUtITThzanJndHJuUEd1dUVEWk9rNVNSRWpaY2x5VVNuKzlVR1F5dUJPcUlFL0s1aVJoZURrMzhmNjc5VGlDWUxiUnloRVRGTlJoMWVuSkhWSC9VaG93TExSWm1IVHFLa21OZFhkYW9WTXRNaUVzTWNEN2JOWSs5YXNsRlBxSEVHUjdtMkRxTlRTeC83TnNHZEhEWTh6UjlReEFZaWdMY0NvYVNKRUdPL3pLdHZGTXpCMk44N1dwUEtpTE5ieUFNZ2xLTnR0OXkzMmZCMmVHOVFUQW1nL0F6MzBuYWVXRlpVM01MS21Ta01mK0xHeUJIalAySzVaRWthNzZQQk1tQzFINGtpRmdOR0FhM3NsdGpyMVRsNnExOGpzR1k0bExEWmMwNGViUy9PTlpacWhqcTViMGtDMFVXUUpld3pzbXhIUDNHWU5Xc0hMbnZvRlpJVzU3aFpiem9uN1RocHNTc2gydFBJRnpwOGhJakl4K0Y5VjV1aFZmbmF2d0M2Y1VPUzVUNW5QWWxBWTV4Rit3STN6eWZJN0NUN3dSSXRrTVlPSXpXMzllMndNTU40VFlYSG5tSTZlVWZFaWdjMmpUeFA5YkU0SHpSdkJHdGtiOVZxbzNEMEdFemtIYTJrNzRkZUtnZGpBQTNwR0o0OWdvWWdkK2s5NFJiYnF0SGVSa0tVdW5mM2wwV3NFOCtMbXRocDBUbk9Ja0dVdWg3VzlyenZaeStJeGt1dENkVUJZTFlFTFh2ZXpjRlUwZThyNnJ5UFlKMGd6dDdURk1BM3BwekV0NkVuak1DMWYvT3BYU3VJTnZvTU1YckxqU2t3NkRXUFEwenBsY29tbW00eEJIZU1mbU5nRWVqMjNBeWkzSlhBcGV2a0NIYUNDa0NoSndGZDZPTnlMNVQzdmt5eXBJVi9nTjhmdVg1dDVScE83WXRQSVJ0T1d6UUdLVm1hdzFqbkNYaG5IN1pTQUtaeXpCQ1ViZTdOMHE4aVJ6RitXVEljd0g2SVQzSndqRExvSGpKQ1ZsVlJ4S3Y1ZkkxOVo5WW1qeUJSTE52bHdWMWR3S0NPTHdhSkV3cUl6OE5jPSIsImtleSI6IklMVHhydnpnZlc1ejVyamhsbCswV05iZ09ubGZBSWxUY1c3aFdmWGZPaXh3Y0Y1aU40QURoQUJGMFZCRGRLcjVteGVEMWRxT2xXbjJ2SU1JVFlMNjJ3PT0ifQ==",
+    "Content-Type": "application/json;charset=UTF-8",
+    "Origin": "https://kiaconnect.ca",
+    "Referer": "https://kiaconnect.ca/cwp/overview",
+    "User-Agent": "Mozilla/5.0",
+    "Accept": "application/json, text/plain, */*",
+    "Language": "1",
+    "Offset": "-4",
+
+    # 🔥 AJOUTER CECI
+    "Cookie": "__cf_bm=NQ6Y8VIMz5HOYVqDXT66ax3bRC5fpz4d0Y4H2WN0qxA-1779375608.893569-1.0.1.1-wG2YcDDp_FsPzRKn6mwTkQeCk7fb6LLCHW8aYJeVXKf_hYB_L8VcUg5E_gbgampIKsj5Opm7gFLv0H2cZxo5zgEkNPpq6uFxIuOIehnI.Vbxb7dvIPxaa1Fx2FQJ5zH9"
     }
 
     body = {
