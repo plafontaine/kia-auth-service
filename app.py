@@ -8,7 +8,7 @@ from flask import Flask, jsonify, request
 from hyundai_kia_connect_api import VehicleManager
 from hyundai_kia_connect_api.exceptions import AuthenticationError
 import json
-
+browser_context = None
 HUBITAT_URL = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824a/apps/246/devices/272/sendKiaRequest"
 ACCESS_TOKEN = "57ad1d4c-edcc-4b8e-aaee-2371e9cc9d4e"
 BASE = "https://cloud.hubitat.com/api/a2640f5d-3176-449c-a37b-44a7eaa1824a/apps/246/devices/272"
@@ -613,8 +613,77 @@ def kia_playwright():
         })
 
 
+@app.route("/kia-login")
+def kia_login():
 
+    global browser_context
 
+    try:
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage"
+                ]
+            )
+
+            browser_context = browser.new_context()
+            page = browser_context.new_page()
+
+            page.goto("https://kiaconnect.ca/login")
+
+            page.wait_for_selector("input")
+
+            page.fill('input[name="email"], input[type="email"]', KIA_USER)
+            page.fill('input[name="password"], input[type="password"]', KIA_PASS)
+
+            page.click('button[type="submit"]')
+
+            page.wait_for_timeout(5000)
+
+            return jsonify({"status": "logged_in ✅"})
+
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e), "trace": traceback.format_exc()})
+
+@app.route("/kia-data")
+def kia_data():
+
+    global browser_context
+
+    try:
+        if not browser_context:
+            return jsonify({"error": "not logged in"})
+
+        page = browser_context.new_page()
+
+        page.goto("https://kiaconnect.ca/cwp/overview")
+
+        page.wait_for_timeout(2000)
+
+        data = page.evaluate("""
+            async () => {
+                const res = await fetch('/tods/api/lstvhclsts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: "{}"
+                });
+                return await res.json();
+            }
+        """)
+
+        return jsonify({
+            "status": "ok",
+            "data": data
+        })
+
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e), "trace": traceback.format_exc()})
 
 
 @app.route("/")
