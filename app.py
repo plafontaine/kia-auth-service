@@ -134,7 +134,6 @@ def check_api_key():
 
 def get_vm():
     global vm
-    global captured_request  # ✅ AJOUT
 
     if vm is None:
         vm = VehicleManager(
@@ -148,10 +147,7 @@ def get_vm():
 
         try:
             vm.login()
-            vm.vehicles = None
-            captured_request = {}  # ✅ maintenant global
-            vm.vehicles  # accès simple pour forcer init
-            time.sleep(2)
+            vm.vehicles   # ✅ ça suffit
 
         except AuthenticationError:
             raise Exception("MFA_REQUIRED")
