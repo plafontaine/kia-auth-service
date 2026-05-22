@@ -587,7 +587,7 @@ def kia_playwright():
 
             page = browser.new_page()
 
-            # ✅ LOGIN RAPIDE
+            # ✅ LOGIN
             page.goto("https://kiaconnect.ca/login", timeout=15000)
 
             page.wait_for_selector(
@@ -607,10 +607,14 @@ def kia_playwright():
 
             page.click('button[type="submit"]')
 
-            # ✅ attente courte (important pour Render FREE)
+            # ✅ attendre login
             page.wait_for_timeout(4000)
 
-            # ✅ ACTION DYNAMIQUE
+            # 🔥 CRITIQUE : charger l'app Kia
+            page.goto("https://kiaconnect.ca/cwp/overview", timeout=15000)
+
+            page.wait_for_timeout(4000)
+
             if action == "vehicles":
 
                 data = page.evaluate("""
@@ -618,12 +622,12 @@ def kia_playwright():
                         try {
                             const res = await fetch('/tods/api/lstvhclsts', {
                                 method: 'POST',
+                                credentials: 'include',
                                 headers: {
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
                                 },
-                                body: JSON.stringify({
-                                    from: 0
-                                })
+                                body: '{"from":0}'
                             });
 
                             return await res.json();
@@ -631,9 +635,8 @@ def kia_playwright():
                         } catch (e) {
                             return { error: e.toString() };
                         }
-                     }
+                    }
                 """)
-
 
             else:
 
@@ -651,6 +654,7 @@ def kia_playwright():
             })
 
     except Exception as e:
+        import traceback
         return jsonify({
             "error": str(e),
             "trace": traceback.format_exc()
