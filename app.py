@@ -607,14 +607,10 @@ def kia_playwright():
 
             page.click('button[type="submit"]')
 
-            # ✅ attendre login
-            page.wait_for_timeout(4000)
+            # ✅ attendre un peu PLUS LONG (clé du fix)
+            page.wait_for_timeout(7000)
 
-            # 🔥 CRITIQUE : charger l'app Kia
-            page.goto("https://kiaconnect.ca/cwp/overview", timeout=15000)
-
-            page.wait_for_timeout(4000)
-
+            # ✅ ACTION
             if action == "vehicles":
 
                 data = page.evaluate("""
@@ -639,17 +635,12 @@ def kia_playwright():
                 """)
 
             else:
-
-                data = {
-                    "error": "action non supportée",
-                    "action": action
-                }
+                data = {"error": "action non supportée"}
 
             browser.close()
 
             return jsonify({
                 "status": "ok",
-                "action": action,
                 "data": data
             })
 
