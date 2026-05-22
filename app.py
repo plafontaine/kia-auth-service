@@ -572,6 +572,9 @@ def kia_playwright():
     action = request.args.get("action", "vehicles")
 
     try:
+        from playwright.sync_api import sync_playwright
+        import traceback
+
         with sync_playwright() as p:
 
             browser = p.chromium.launch(
@@ -590,24 +593,14 @@ def kia_playwright():
             # ✅ LOGIN
             page.goto("https://kiaconnect.ca/login", timeout=15000)
 
-            page.wait_for_selector(
-                'input[name="email"], input[type="email"]',
-                timeout=8000
-            )
+            page.wait_for_selector('input[type="email"]', timeout=8000)
 
-            page.fill(
-                'input[name="email"], input[type="email"]',
-                KIA_USER
-            )
-
-            page.fill(
-                'input[name="password"], input[type="password"]',
-                KIA_PASS
-            )
+            page.fill('input[type="email"]', KIA_USER)
+            page.fill('input[type="password"]', KIA_PASS)
 
             page.click('button[type="submit"]')
 
-            # ✅ attendre un peu PLUS LONG (clé du fix)
+            # ✅ attendre session prête
             page.wait_for_timeout(7000)
 
             # ✅ ACTION
@@ -616,7 +609,7 @@ def kia_playwright():
                 data = page.evaluate("""
                     async () => {
                         try {
-                            const res = await fetch('/tods/api/lstvhclsts', {
+                            const res = await fetch('https://kiaconnect.ca/tods/api/lstvhclsts', {
                                 method: 'POST',
                                 credentials: 'include',
                                 headers: {
@@ -650,7 +643,6 @@ def kia_playwright():
             "error": str(e),
             "trace": traceback.format_exc()
         })
-
 
 @app.route("/kia-login")
 def kia_login():
