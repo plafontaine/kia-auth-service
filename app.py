@@ -654,11 +654,6 @@ def kia_playwright():
         })
 
 
-@app.route("/")
-def home():
-    return "Kia Playwright OK ✅"
-
-
 @app.route("/kia-login")
 def kia_login():
 
