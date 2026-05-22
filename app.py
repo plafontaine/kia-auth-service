@@ -600,8 +600,14 @@ def kia_playwright():
 
             page.click('button[type="submit"]')
 
-            # ✅ attendre session prête
-            page.wait_for_timeout(7000)
+            # ✅ IMPORTANT: attendre vraie navigation SPA
+            page.wait_for_url("**/cwp/**", timeout=15000)
+
+            # ✅ attendre que JS Kia initialise
+            page.wait_for_load_state("networkidle")
+
+            # ✅ extra wait minimal
+            page.wait_for_timeout(3000)
 
             # ✅ ACTION
             if action == "vehicles":
