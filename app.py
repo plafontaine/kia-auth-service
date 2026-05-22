@@ -625,12 +625,15 @@ def kia_playwright():
                                     from: 0
                                 })
                             });
+
                             return await res.json();
+
                         } catch (e) {
                             return { error: e.toString() };
                         }
-                    }
+                     }
                 """)
+
 
             else:
 
