@@ -773,12 +773,20 @@ def kia_action():
 
                 data = page.evaluate("""
                     async () => {
-                        const res = await fetch('/tods/api/lstvhclsts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ from: 0 })
-                        });
-                        return await res.json();
+                        try {
+                            const res = await fetch('/tods/api/lstvhclsts', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: '{"from":0}'
+                            });
+
+                            return await res.json();
+
+                        } catch (e) {
+                            return { error: e.toString() };
+                        }
                     }
                 """)
 
