@@ -24,9 +24,13 @@ def kia_init():
 
             browser = p.chromium.launch(
             headless=True,
-            executable_path="/opt/render/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
-            args=["--no-sandbox", "--disable-dev-shm-usage"]
+            args=[
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage"
+            ]
             )
+
 
             context = browser.new_context()
             page = context.new_page()
