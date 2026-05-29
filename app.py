@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from playwright.sync_api import sync_playwright
 import json
 import os
-
 import traceback
 
 app = Flask(__name__)
@@ -13,9 +12,9 @@ KIA_PASS = os.environ.get("KIA_PASS")
 COOKIE_FILE = "/tmp/kia_cookies.json"
 
 
-# =========================================
-# 🔑 1. LOGIN + SAVE SESSION (À FAIRE 1 FOIS)
-# =========================================
+# =========================
+# 🔑 LOGIN
+# =========================
 @app.route("/kia-init")
 def kia_init():
     try:
@@ -25,7 +24,6 @@ def kia_init():
                 headless=True,
                 args=[
                     "--no-sandbox",
-                    "--disable-setuid-sandbox",
                     "--disable-dev-shm-usage"
                 ]
             )
@@ -34,7 +32,6 @@ def kia_init():
             page = context.new_page()
 
             page.goto("https://kiaconnect.ca/login", timeout=20000)
-
             page.wait_for_selector('input[type="email"]', timeout=10000)
 
             page.fill('input[type="email"]', KIA_USER)
@@ -65,19 +62,15 @@ def kia_init():
         })
 
 
-
-# =========================================
-# 🚗 2. FETCH VEHICLES (RAPIDE)
-# =========================================
+# =========================
+# 🚗 VEHICLES
+# =========================
 @app.route("/kia-vehicles")
 def kia_vehicles():
     try:
-
-        # Vérifier si session existe
         if not os.path.exists(COOKIE_FILE):
             return jsonify({
-                "status": "error",
-                "message": "⚠️ exécute /kia-init d'abord"
+                "error": "run /kia-init first"
             })
 
         with open(COOKIE_FILE, "r") as f:
@@ -85,25 +78,22 @@ def kia_vehicles():
 
         with sync_playwright() as p:
 
-           browser = p.chromium.launch(
-               headless=True,
-               args=[
-                   "--no-sandbox",
-                   "--disable-dev-shm-usage"
-               ]
-           )
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage"
+                ]
+            )
 
             context = browser.new_context()
             context.add_cookies(cookies)
 
             page = context.new_page()
 
-            # 🔹 Aller directement Kia (rapide)
             page.goto("https://kiaconnect.ca/cwp/overview", timeout=15000)
-
             page.wait_for_timeout(2000)
 
-            # 🔥 Appel API réel
             data = page.evaluate("""
                 async () => {
                     try {
@@ -127,10 +117,7 @@ def kia_vehicles():
 
             browser.close()
 
-            return jsonify({
-                "status": "ok",
-                "data": data
-            })
+            return jsonify(data)
 
     except Exception as e:
         return jsonify({
@@ -139,9 +126,7 @@ def kia_vehicles():
         })
 
 
-# =========================================
-# 🏠 HOME
-# =========================================
 @app.route("/")
 def home():
     return "Kia API OK ✅"
+``
