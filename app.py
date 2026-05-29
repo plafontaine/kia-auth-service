@@ -24,13 +24,13 @@ def kia_init():
 
             browser = p.chromium.launch(
             headless=True,
-            channel="chrome",
             args=[
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-dev-shm-usage"
             ]
             )
+
 
 
             context = browser.new_context()
