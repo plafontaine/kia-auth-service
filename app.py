@@ -24,6 +24,7 @@ def kia_init():
 
             browser = p.chromium.launch(
             headless=True,
+            channel="chrome",
             args=[
             "--no-sandbox",
             "--disable-setuid-sandbox",
