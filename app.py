@@ -22,35 +22,30 @@ def kia_init():
         with sync_playwright() as p:
 
             browser = p.chromium.launch(
-            headless=True,
-            args=[
-            "--no-sandbox",
-            "--disable-dev-shm-usage"
-            ]
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage"
+                ]
             )
-
-
 
             context = browser.new_context()
             page = context.new_page()
 
-            # 🔹 Ouvrir page login
             page.goto("https://kiaconnect.ca/login", timeout=20000)
 
             page.wait_for_selector('input[type="email"]', timeout=10000)
 
-            # 🔹 Login
             page.fill('input[type="email"]', KIA_USER)
             page.fill('input[type="password"]', KIA_PASS)
 
             page.click('button[type="submit"]')
 
-            # 🔥 IMPORTANT : attendre vraie session Kia
             page.wait_for_url("**/cwp/**", timeout=20000)
             page.wait_for_load_state("networkidle")
             page.wait_for_timeout(3000)
 
-            # 🔹 Sauvegarde cookies
             cookies = context.cookies()
 
             with open(COOKIE_FILE, "w") as f:
@@ -68,6 +63,7 @@ def kia_init():
             "error": str(e),
             "trace": traceback.format_exc()
         })
+
 
 
 # =========================================
@@ -90,11 +86,11 @@ def kia_vehicles():
         with sync_playwright() as p:
 
            browser = p.chromium.launch(
-           headless=True,
-           args=[
-           "--no-sandbox",
-           "--disable-dev-shm-usage"
-           ]
+               headless=True,
+               args=[
+                   "--no-sandbox",
+                   "--disable-dev-shm-usage"
+               ]
            )
 
             context = browser.new_context()
