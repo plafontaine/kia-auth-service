@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from playwright.sync_api import sync_playwright
 import json
 import os
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/.cache/ms-playwright"
 
 import traceback
 
@@ -24,10 +23,8 @@ def kia_init():
 
             browser = p.chromium.launch(
             headless=True,
-            executable_path="/opt/render/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
             args=[
             "--no-sandbox",
-            "--disable-setuid-sandbox",
             "--disable-dev-shm-usage"
             ]
             )
@@ -92,15 +89,13 @@ def kia_vehicles():
 
         with sync_playwright() as p:
 
-            browser = p.chromium.launch(
-            headless=True,
-            executable_path="/opt/render/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
-            args=[
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage"
-            ]
-            )
+           browser = p.chromium.launch(
+           headless=True,
+           args=[
+           "--no-sandbox",
+           "--disable-dev-shm-usage"
+           ]
+           )
 
             context = browser.new_context()
             context.add_cookies(cookies)
