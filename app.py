@@ -20,12 +20,13 @@ def kia_init():
     try:
         with sync_playwright() as p:
 
-            browser = p.chromium.launch(
-                headless=True,
-                args=[
-                    "--no-sandbox",
-                    "--disable-dev-shm-usage"
-                ]
+           browser = p.chromium.launch(
+               headless=True,
+               args=[
+                   "--no-sandbox",
+                   "--disable-dev-shm-usage"
+               ],
+               channel="chromium"
             )
 
             context = browser.new_context()
@@ -83,8 +84,10 @@ def kia_vehicles():
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
-                ]
+                ],
+                channel="chromium"
             )
+
 
             context = browser.new_context()
             context.add_cookies(cookies)
