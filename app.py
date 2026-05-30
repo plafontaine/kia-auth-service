@@ -12,21 +12,17 @@ KIA_PASS = os.environ.get("KIA_PASS")
 COOKIE_FILE = "/tmp/kia_cookies.json"
 
 
-# =========================
-# 🔑 LOGIN
-# =========================
 @app.route("/kia-init")
 def kia_init():
     try:
         with sync_playwright() as p:
 
-           browser = p.chromium.launch(
-               headless=True,
-               args=[
-                   "--no-sandbox",
-                   "--disable-dev-shm-usage"
-               ],
-               channel="chromium"
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage"
+                ]
             )
 
             context = browser.new_context()
@@ -63,9 +59,6 @@ def kia_init():
         })
 
 
-# =========================
-# 🚗 VEHICLES
-# =========================
 @app.route("/kia-vehicles")
 def kia_vehicles():
     try:
@@ -84,10 +77,8 @@ def kia_vehicles():
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
-                ],
-                channel="chromium"
+                ]
             )
-
 
             context = browser.new_context()
             context.add_cookies(cookies)
