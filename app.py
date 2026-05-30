@@ -3,7 +3,8 @@ from playwright.sync_api import sync_playwright
 import json
 import os
 import traceback
-
+import os
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/.cache/ms-playwright"
 app = Flask(__name__)
 
 KIA_USER = os.environ.get("KIA_USER")
