@@ -1,10 +1,10 @@
 from flask import Flask, jsonify
 from playwright.sync_api import sync_playwright
 import json
-import os
 import traceback
 import os
 os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/.cache/ms-playwright"
+os.environ["PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"] = "1"
 app = Flask(__name__)
 
 KIA_USER = os.environ.get("KIA_USER")
@@ -23,8 +23,10 @@ def kia_init():
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
-                ]
+                ],
+                chromium_sandbox=False
             )
+
 
             context = browser.new_context()
             page = context.new_page()
@@ -78,8 +80,10 @@ def kia_vehicles():
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
-                ]
+                ],
+                chromium_sandbox=False
             )
+
 
             context = browser.new_context()
             context.add_cookies(cookies)
