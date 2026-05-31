@@ -9,9 +9,12 @@ app = Flask(__name__)
 KIA_USER = os.environ.get("KIA_USER")
 KIA_PASS = os.environ.get("KIA_PASS")
 
-COOKIE_FILE = "/tmp/kia_cookies.json"
+COOKIE_FILE = "kia_cookies.json"
 
 
+# =========================
+# 🔑 LOGIN
+# =========================
 @app.route("/kia-init")
 def kia_init():
     try:
@@ -21,8 +24,7 @@ def kia_init():
                 headless=True,
                 args=[
                     "--no-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu"
+                    "--disable-dev-shm-usage"
                 ]
             )
 
@@ -30,6 +32,7 @@ def kia_init():
             page = context.new_page()
 
             page.goto("https://kiaconnect.ca/login", timeout=20000)
+
             page.wait_for_selector('input[type="email"]', timeout=10000)
 
             page.fill('input[type="email"]', KIA_USER)
@@ -37,20 +40,39 @@ def kia_init():
 
             page.click('button[type="submit"]')
 
+            # ✔️ attendre que la page charge
             page.wait_for_load_state("networkidle")
             page.wait_for_timeout(5000)
 
+            # 🔥 EXTRACTION TOKEN
+            access_token = page.evaluate("""
+            () => {
+                try {
+                    return localStorage.getItem("accessToken")
+                        || localStorage.getItem("access_token")
+                        || sessionStorage.getItem("accessToken")
+                        || sessionStorage.getItem("access_token");
+                } catch (e) {
+                    return null;
+                }
+            }
+            """)
 
             cookies = context.cookies()
 
+            # sauvegarde session
             with open(COOKIE_FILE, "w") as f:
-                json.dump(cookies, f)
+                json.dump({
+                    "cookies": cookies,
+                    "token": access_token
+                }, f)
 
             browser.close()
 
             return jsonify({
                 "status": "✅ session initialisée",
-                "cookies_saved": len(cookies)
+                "cookies": len(cookies),
+                "token_found": access_token is not None
             })
 
     except Exception as e:
@@ -60,16 +82,21 @@ def kia_init():
         })
 
 
+# =========================
+# 🚗 VEHICLES
+# =========================
 @app.route("/kia-vehicles")
 def kia_vehicles():
     try:
+
         if not os.path.exists(COOKIE_FILE):
-            return jsonify({
-                "error": "run /kia-init first"
-            })
+            return jsonify({"error": "run /kia-init first"})
 
         with open(COOKIE_FILE, "r") as f:
-            cookies = json.load(f)
+            session_data = json.load(f)
+
+        cookies = session_data.get("cookies")
+        access_token = session_data.get("token")
 
         with sync_playwright() as p:
 
@@ -77,24 +104,20 @@ def kia_vehicles():
                 headless=True,
                 args=[
                     "--no-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu"
+                    "--disable-dev-shm-usage"
                 ]
             )
 
             context = browser.new_context()
             context.add_cookies(cookies)
 
-            page = context.new_page()
-
-            page.goto("https://kiaconnect.ca/cwp/overview", timeout=15000)
-            page.wait_for_timeout(2000)
-
+            # 🔥 API CALL AVEC TOKEN
             response = context.request.post(
                 "https://kiaconnect.ca/tods/api/lstvhclsts",
                 headers={
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+                    "accesstoken": access_token or ""
                 },
                 data=json.dumps({"from": 0})
             )
