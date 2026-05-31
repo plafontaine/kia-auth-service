@@ -20,11 +20,11 @@ def kia_init():
 
             browser = p.chromium.launch(
                 headless=True,
+                executable_path="/app/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
-                ],
-                chromium_sandbox=False
+                ]
             )
 
 
@@ -77,11 +77,11 @@ def kia_vehicles():
 
             browser = p.chromium.launch(
                 headless=True,
+                executable_path="/app/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
                 args=[
                     "--no-sandbox",
                     "--disable-dev-shm-usage"
-                ],
-                chromium_sandbox=False
+                ]
             )
 
 
