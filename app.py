@@ -3,8 +3,7 @@ from playwright.sync_api import sync_playwright
 import json
 import traceback
 import os
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/app/.cache/ms-playwright"
-os.environ["PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"] = "1"
+
 app = Flask(__name__)
 
 KIA_USER = os.environ.get("KIA_USER")
@@ -17,8 +16,7 @@ COOKIE_FILE = "/tmp/kia_cookies.json"
 def kia_init():
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            browser.close()
+
             browser = p.chromium.launch(
                 headless=True,
                 args=[
@@ -27,8 +25,6 @@ def kia_init():
                     "--disable-gpu"
                 ]
             )
-
-
 
             context = browser.new_context()
             page = context.new_page()
@@ -76,8 +72,7 @@ def kia_vehicles():
             cookies = json.load(f)
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            browser.close()
+
             browser = p.chromium.launch(
                 headless=True,
                 args=[
@@ -86,8 +81,6 @@ def kia_vehicles():
                     "--disable-gpu"
                 ]
             )
-
-
 
             context = browser.new_context()
             context.add_cookies(cookies)
