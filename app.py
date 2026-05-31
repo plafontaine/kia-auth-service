@@ -119,7 +119,9 @@ def kia_vehicles():
                     "Accept": "application/json",
                     "accesstoken": access_token or ""
                 },
-                data=json.dumps({"from": 0})
+                data=json.dumps({
+                    "From": "CWP"
+                })
             )
 
             data = response.json()
