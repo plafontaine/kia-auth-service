@@ -9,15 +9,17 @@ app = Flask(__name__)
 KIA_USER = os.environ.get("KIA_USER")
 KIA_PASS = os.environ.get("KIA_PASS")
 
-COOKIE_FILE = "kia_cookies.json"
+COOKIE_FILE = "kia_session.json"
 
 
 # =========================
-# 🔑 LOGIN
+# 🔑 LOGIN + TOKEN CAPTURE
 # =========================
 @app.route("/kia-init")
 def kia_init():
     try:
+        access_token = None
+
         with sync_playwright() as p:
 
             browser = p.chromium.launch(
@@ -29,6 +31,17 @@ def kia_init():
             )
 
             context = browser.new_context()
+
+            # 🔥 CAPTURE AUTOMATIQUE TOKEN depuis requêtes
+            def handle_request(request):
+                nonlocal access_token
+                headers = request.headers
+
+                if "accesstoken" in headers:
+                    access_token = headers["accesstoken"]
+
+            context.on("request", handle_request)
+
             page = context.new_page()
 
             page.goto("https://kiaconnect.ca/login", timeout=20000)
@@ -40,27 +53,14 @@ def kia_init():
 
             page.click('button[type="submit"]')
 
-            # ✔️ attendre que la page charge
+            # 🔥 Aller sur overview pour forcer appels API Kia
+            page.goto("https://kiaconnect.ca/cwp/overview", timeout=20000)
             page.wait_for_load_state("networkidle")
             page.wait_for_timeout(5000)
 
-            # 🔥 EXTRACTION TOKEN
-            access_token = page.evaluate("""
-            () => {
-                try {
-                    return localStorage.getItem("accessToken")
-                        || localStorage.getItem("access_token")
-                        || sessionStorage.getItem("accessToken")
-                        || sessionStorage.getItem("access_token");
-                } catch (e) {
-                    return null;
-                }
-            }
-            """)
-
             cookies = context.cookies()
 
-            # sauvegarde session
+            # sauvegarde cookies + token
             with open(COOKIE_FILE, "w") as f:
                 json.dump({
                     "cookies": cookies,
@@ -98,6 +98,9 @@ def kia_vehicles():
         cookies = session_data.get("cookies")
         access_token = session_data.get("token")
 
+        if not access_token:
+            return jsonify({"error": "no access token, run /kia-init again"})
+
         with sync_playwright() as p:
 
             browser = p.chromium.launch(
@@ -111,16 +114,18 @@ def kia_vehicles():
             context = browser.new_context()
             context.add_cookies(cookies)
 
-            # 🔥 API CALL AVEC TOKEN
+            # 🔥 REQUÊTE API CORRECTE
             response = context.request.post(
                 "https://kiaconnect.ca/tods/api/lstvhclsts",
                 headers={
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "accesstoken": access_token or ""
+                    "accesstoken": access_token
                 },
                 data=json.dumps({
-                    "From": "CWP"
+                    "From": "CWP",
+                    "Language": "1",
+                    "Offset": "-4"
                 })
             )
 
