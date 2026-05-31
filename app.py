@@ -17,15 +17,17 @@ COOKIE_FILE = "/tmp/kia_cookies.json"
 def kia_init():
     try:
         with sync_playwright() as p:
-
+            browser = p.chromium.launch(headless=True)
+            browser.close()
             browser = p.chromium.launch(
                 headless=True,
-                executable_path="/app/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
                 args=[
                     "--no-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu"
                 ]
             )
+
 
 
             context = browser.new_context()
@@ -74,15 +76,17 @@ def kia_vehicles():
             cookies = json.load(f)
 
         with sync_playwright() as p:
-
+            browser = p.chromium.launch(headless=True)
+            browser.close()
             browser = p.chromium.launch(
                 headless=True,
-                executable_path="/app/.cache/ms-playwright/chromium-1223/chrome-linux/chrome",
                 args=[
                     "--no-sandbox",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu"
                 ]
             )
+
 
 
             context = browser.new_context()
