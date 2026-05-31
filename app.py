@@ -37,9 +37,9 @@ def kia_init():
 
             page.click('button[type="submit"]')
 
-            page.wait_for_url("**/cwp/**", timeout=20000)
             page.wait_for_load_state("networkidle")
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(5000)
+
 
             cookies = context.cookies()
 
