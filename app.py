@@ -92,7 +92,11 @@ def kia_vehicles():
 
             response = context.request.post(
                 "https://kiaconnect.ca/tods/api/lstvhclsts",
-                data={"from": 0}
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                data=json.dumps({"from": 0})
             )
 
             data = response.json()
