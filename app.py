@@ -110,6 +110,7 @@ def kia_vehicles():
                     }
                 }
             """)
+            return jsonify({"TEST": "NEW CODE"})
 
             browser.close()
 
