@@ -90,27 +90,12 @@ def kia_vehicles():
             page.goto("https://kiaconnect.ca/cwp/overview", timeout=15000)
             page.wait_for_timeout(2000)
 
-            data = page.evaluate("""
-                async () => {
-                    try {
-                        const res = await fetch('https://kiaconnect.ca/tods/api/lstvhclsts', {
-                            method: 'POST',
-                            credentials: 'include',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ from: 0 })
-                        });
+            response = context.request.post(
+                "https://kiaconnect.ca/tods/api/lstvhclsts",
+                data={"from": 0}
+            )
 
-                        return await res.json();
-
-                    } catch (e) {
-                        return { error: e.toString() };
-                    }
-                }
-            """)
-            return jsonify({"TEST": "NEW CODE"})
+            data = response.json()
 
             browser.close()
 
