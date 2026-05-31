@@ -100,7 +100,7 @@ def kia_vehicles():
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
                             },
-                            body: '{"from":0}'
+                            body: JSON.stringify({ from: 0 })
                         });
 
                         return await res.json();
